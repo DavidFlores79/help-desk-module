@@ -37,7 +37,7 @@ export interface Attachment {
   filename: string;
   original_name: string;
   name: string;  // Add alias for display
-  mime_type: string;
+  mime_type?: string;  // Optional - may not always be provided
   size: number;
   url: string;
   created_at: string;

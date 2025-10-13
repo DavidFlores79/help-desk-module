@@ -152,6 +152,82 @@ export class TicketService {
     );
   }
 
+  // Attachment Management Methods
+  
+  /**
+   * Download attachment with original filename
+   * Forces browser to download the file
+   */
+  downloadAttachment(attachmentId: number): Observable<Blob> {
+    console.log('📥 [TICKET SERVICE] Downloading attachment:', attachmentId);
+    return this.http.get(
+      `${this.apiUrl}/attachments/${attachmentId}`,
+      { responseType: 'blob' }
+    );
+  }
+
+  /**
+   * View attachment in browser (for images, PDFs, etc.)
+   * Displays file inline without downloading
+   */
+  viewAttachment(attachmentId: number): Observable<Blob> {
+    console.log('👁️ [TICKET SERVICE] Viewing attachment:', attachmentId);
+    return this.http.get(
+      `${this.apiUrl}/attachments/${attachmentId}/view`,
+      { responseType: 'blob' }
+    );
+  }
+
+  /**
+   * Delete attachment from ticket
+   * Removes file from server and database
+   */
+  deleteAttachment(attachmentId: number): Observable<ApiResponse<null>> {
+    console.log('🗑️ [TICKET SERVICE] Deleting attachment:', attachmentId);
+    return this.http.delete<ApiResponse<null>>(
+      `${this.apiUrl}/attachments/${attachmentId}`
+    );
+  }
+
+  /**
+   * Get download URL for attachment
+   */
+  getAttachmentDownloadUrl(attachmentId: number): string {
+    return `${this.apiUrl}/attachments/${attachmentId}`;
+  }
+
+  /**
+   * Get view URL for attachment (to display in browser)
+   */
+  getAttachmentViewUrl(attachmentId: number): string {
+    return `${this.apiUrl}/attachments/${attachmentId}/view`;
+  }
+
+  /**
+   * Helper to determine if attachment is an image
+   */
+  isImageAttachment(mimeType: string | undefined): boolean {
+    return mimeType ? mimeType.startsWith('image/') : false;
+  }
+
+  /**
+   * Helper to determine if attachment is a PDF
+   */
+  isPdfAttachment(mimeType: string | undefined): boolean {
+    return mimeType === 'application/pdf';
+  }
+
+  /**
+   * Helper to determine if attachment can be viewed in browser
+   */
+  canViewInBrowser(mimeType: string | undefined): boolean {
+    if (!mimeType) return false;
+    return this.isImageAttachment(mimeType) || 
+           this.isPdfAttachment(mimeType) ||
+           mimeType.startsWith('text/') ||
+           mimeType === 'application/json';
+  }
+
   private buildFormData(data: CreateTicketDto): FormData {
     const formData = new FormData();
     formData.append('title', data.title);

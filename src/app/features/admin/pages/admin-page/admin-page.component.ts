@@ -222,7 +222,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
                            class="text-primary-600 hover:text-primary-700 mr-4">
                           View
                         </a>
-                        @if (ticket.status !== 'closed') {
+                        @if (ticket.status !== 'closed' && ticket.status !== 'resolved') {
                           <button 
                             (click)="updateStatus(ticket)"
                             class="text-gray-600 hover:text-gray-700">
@@ -333,6 +333,12 @@ export class AdminPageComponent implements OnInit {
   }
 
   updateStatus(ticket: Ticket): void {
+    // Prevent status changes on resolved or closed tickets
+    if (ticket.status === 'resolved' || ticket.status === 'closed') {
+      alert('Cannot change status of resolved or closed tickets. Please reopen the ticket first from the ticket detail page.');
+      return;
+    }
+
     const newStatus = prompt(
       'Update ticket status:\nopen, assigned, in_progress, awaiting_user, resolved, closed',
       ticket.status

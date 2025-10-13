@@ -10,7 +10,8 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
 import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe';
-import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
+import { ResponsesModalComponent } from '../../../../shared/components/responses-modal/responses-modal.component';
+import { AttachmentViewerComponent } from '../../../../shared/components/attachment-viewer/attachment-viewer.component';
 
 @Component({
   selector: 'app-ticket-detail-page',
@@ -23,7 +24,8 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
     TimeAgoPipe,
     StatusBadgePipe,
     PriorityBadgePipe,
-    FileUploadComponent
+    ResponsesModalComponent,
+    AttachmentViewerComponent
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -67,7 +69,8 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                     <select 
                       [value]="ticket.status"
                       (change)="changeTicketStatus($event)"
-                      class="text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                      [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
+                      class="text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
                       <option value="open">🔓 Open</option>
                       <option value="assigned">👤 Assigned</option>
                       <option value="in_progress">⏳ In Progress</option>
@@ -80,7 +83,8 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                     <select 
                       [value]="ticket.priority"
                       (change)="changeTicketPriority($event)"
-                      class="text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                      [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
+                      class="text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
                       <option value="low">Low</option>
                       <option value="medium">Medium</option>
                       <option value="high">High</option>
@@ -111,7 +115,7 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                   <p class="text-sm font-medium">
                     {{ getAssignedToName() }}
                   </p>
-                  @if (authService.isAdmin()) {
+                  @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
                     <button 
                       (click)="openAssignModal()"
                       class="text-xs text-primary-600 hover:text-primary-700 underline"
@@ -154,19 +158,12 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
             <!-- Attachments -->
             @if (ticket.attachments && ticket.attachments.length > 0) {
               <div class="pt-4 border-t border-gray-200 mt-4">
-                <p class="text-sm font-medium text-gray-700 mb-2">Attachments:</p>
-                <div class="flex flex-wrap gap-2">
-                  @for (attachment of ticket.attachments; track attachment.id) {
-                    <a [href]="attachment.url" target="_blank" 
-                       class="flex items-center gap-2 px-3 py-2 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors">
-                      <svg class="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                              d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                      </svg>
-                      <span class="text-sm text-gray-700">{{ attachment.name || attachment.original_name }}</span>
-                    </a>
-                  }
-                </div>
+                <p class="text-sm font-medium text-gray-700 mb-3">Attachments:</p>
+                <app-attachment-viewer
+                  [attachments]="ticket.attachments"
+                  [canDelete]="canDeleteTicket()"
+                  (attachmentDeleted)="onAttachmentDeleted($event)"
+                ></app-attachment-viewer>
               </div>
             }
 
@@ -199,129 +196,26 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
             </div>
           </div>
 
-          <!-- Responses -->
-          <div class="space-y-4 mb-6">
-            <h2 class="text-xl font-heading font-semibold text-gray-900">Responses</h2>
-            
-            @if (ticket.responses && ticket.responses.length > 0) {
-              @for (response of ticket.responses; track response.id) {
-                <!-- Only show internal notes to admins -->
-                @if (!response.is_internal || (response.is_internal && authService.isAdmin())) {
-                  <div class="card" [class.bg-blue-50]="response.is_internal">
-                    <div class="flex items-start gap-4">
-                      <div class="flex-shrink-0">
-                        <div class="w-10 h-10 rounded-full bg-primary-100 flex items-center justify-center">
-                          <span class="text-primary-700 font-semibold text-sm">
-                            {{ response.user.name.charAt(0).toUpperCase() }}
-                          </span>
-                        </div>
-                      </div>
-                      <div class="flex-1">
-                        <div class="flex items-center justify-between mb-2">
-                          <div>
-                            <p class="font-medium text-gray-900">{{ response.user.name }}</p>
-                            <p class="text-sm text-gray-500">{{ response.created_at | timeAgo }}</p>
-                          </div>
-                          @if (response.is_internal) {
-                            <span class="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-100 text-yellow-800">
-                              🔒 Internal Note
-                            </span>
-                          }
-                        </div>
-                        <p class="text-gray-700">{{ response.message || response.body }}</p>
-                      
-                      @if (response.attachments && response.attachments.length > 0) {
-                        <div class="mt-3 flex flex-wrap gap-2">
-                          @for (attachment of response.attachments; track attachment.id) {
-                            <a [href]="attachment.url" target="_blank" 
-                               class="flex items-center gap-1 text-sm text-primary-600 hover:text-primary-700">
-                              <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                      d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                              </svg>
-                              {{ attachment.name || attachment.original_name }}
-                            </a>
-                          }
-                        </div>
-                      }
-                    </div>
-                  </div>
-                </div>
-                }
-              }
-            } @else {
-              <p class="text-gray-500 text-center py-8">No responses yet</p>
-            }
-          </div>
-
-          <!-- Add Response Form -->
-          @if (ticket.status !== 'closed') {
-            <div class="card">
-              <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Response</h3>
-              
-              <form [formGroup]="responseForm" (ngSubmit)="submitResponse()">
-                <div class="mb-4">
-                  <textarea
-                    formControlName="body"
-                    rows="4"
-                    class="input-field"
-                    placeholder="Type your response here..."
-                    [class.border-danger-500]="responseForm.get('body')?.invalid && responseForm.get('body')?.touched"
-                  ></textarea>
-                  @if (responseForm.get('body')?.invalid && responseForm.get('body')?.touched) {
-                    <p class="mt-1 text-sm text-danger-600">Response body is required</p>
-                  }
-                </div>
-
-                <!-- Internal Note Checkbox (Admin Only) -->
-                @if (authService.isAdmin()) {
-                  <div class="mb-4">
-                    <label class="flex items-center gap-2 cursor-pointer">
-                      <input 
-                        type="checkbox" 
-                        formControlName="internal"
-                        class="w-4 h-4 text-primary-600 rounded border-gray-300 focus:ring-primary-500"
-                      />
-                      <span class="text-sm font-medium text-gray-700">
-                        🔒 Mark as internal note (only visible to admins)
-                      </span>
-                    </label>
-                  </div>
-                }
-
-                <div class="mb-4">
-                  <app-file-upload
-                    formControlName="attachments"
-                    [maxFiles]="5"
-                    [maxFileSize]="'10MB'"
-                  ></app-file-upload>
-                </div>
-
-                @if (responseError) {
-                  <div class="mb-4 p-3 bg-danger-50 border border-danger-200 rounded-lg">
-                    <p class="text-sm text-danger-700">{{ responseError }}</p>
-                  </div>
-                }
-
-                <div class="flex items-center gap-4 relative z-10">
-                  <button
-                    type="submit"
-                    class="btn-primary flex-shrink-0 hover:bg-primary-700 transition-colors duration-200"
-                    [disabled]="responseForm.invalid || isSubmittingResponse">
-                    {{ isSubmittingResponse ? 'Sending...' : 'Send Response' }}
-                  </button>
-                  
-                  <div class="text-xs text-gray-500">
-                    @if (responseForm.invalid) {
-                      <span class="text-danger-600">⚠️ Please fill in required fields</span>
-                    } @else {
-                      <span class="text-success-600">✓ Ready to send</span>
-                    }
-                  </div>
-                </div>
-              </form>
+          <!-- View Responses Button -->
+          <div class="card">
+            <div class="flex items-center justify-between">
+              <div>
+                <h2 class="text-xl font-heading font-semibold text-gray-900 mb-1">Responses</h2>
+                <p class="text-sm text-gray-600">
+                  {{ ticket.responses?.length || 0 }} {{ (ticket.responses?.length || 0) === 1 ? 'response' : 'responses' }}
+                </p>
+              </div>
+              <button 
+                (click)="openResponsesModal()"
+                class="btn-primary flex items-center gap-2">
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
+                </svg>
+                View & Add Responses
+              </button>
             </div>
-          }
+          </div>
         }
 
         @if (errorMessage) {
@@ -375,6 +269,15 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
         }
       </main>
     </div>
+
+    <!-- Responses Modal -->
+    <app-responses-modal
+      [isOpen]="showResponsesModal"
+      [responses]="ticket?.responses || []"
+      [ticket]="ticket"
+      (closeModal)="closeResponsesModal()"
+      (responseAdded)="onResponseAdded()"
+    ></app-responses-modal>
   `
 })
 export class TicketDetailPageComponent implements OnInit {
@@ -390,20 +293,13 @@ export class TicketDetailPageComponent implements OnInit {
   isLoading = false;
   isLoadingUsers = false;
   errorMessage = '';
-  responseError = '';
-  isSubmittingResponse = false;
   isReopening = false;
   isDeleting = false;
   isChangingStatus = false;
   isChangingPriority = false;
   isAssigning = false;
   showAssignModal = false;
-
-  responseForm = this.fb.group({
-    body: ['', Validators.required], // API expects 'body' not 'message'
-    attachments: [[]],
-    internal: [false] // Admin-only internal note checkbox
-  });
+  showResponsesModal = false;
 
   assignForm = this.fb.group({
     assigned_to: [null as number | null, Validators.required]
@@ -418,14 +314,8 @@ export class TicketDetailPageComponent implements OnInit {
         this.loadUsers();
       }
     }
-    
-    // Log form initialization
-    console.log('📝 [TICKET DETAIL] Response form initialized:', {
-      valid: this.responseForm.valid,
-      value: this.responseForm.value,
-      controls: Object.keys(this.responseForm.controls)
-    });
   }
+  
   loadUsers(): void {
     this.isLoadingUsers = true;
     console.log('🔄 [TICKET DETAIL] Loading admins and superusers for assignment');
@@ -505,108 +395,27 @@ export class TicketDetailPageComponent implements OnInit {
     });
   }
 
-  submitResponse(): void {
-    console.log('🔄 [TICKET DETAIL] submitResponse called');
-    console.log('   Form valid:', this.responseForm.valid);
-    console.log('   Form value:', this.responseForm.value);
-    console.log('   Form status:', this.responseForm.status);
-    console.log('   Ticket exists:', !!this.ticket);
-    console.log('   Ticket ID:', this.ticket?.id);
-    
-    // Log all form control states
-    Object.keys(this.responseForm.controls).forEach(key => {
-      const control = this.responseForm.get(key);
-      console.log(`   Form control '${key}':`, {
-        valid: control?.valid,
-        invalid: control?.invalid,
-        value: control?.value,
-        errors: control?.errors,
-        touched: control?.touched,
-        dirty: control?.dirty
-      });
-    });
-    
-    if (this.responseForm.invalid) {
-      console.error('❌ [TICKET DETAIL] Form is invalid, marking all as touched');
-      Object.keys(this.responseForm.controls).forEach(key => {
-        const control = this.responseForm.get(key);
-        if (control?.invalid) {
-          console.error(`   - ${key} is invalid:`, control.errors);
-        }
-      });
-      this.responseForm.markAllAsTouched();
-      return;
+  openResponsesModal(): void {
+    this.showResponsesModal = true;
+  }
+
+  closeResponsesModal(): void {
+    this.showResponsesModal = false;
+  }
+
+  onResponseAdded(): void {
+    // Reload ticket to get updated responses
+    if (this.ticket) {
+      this.loadTicket(this.ticket.id);
     }
-    
-    if (!this.ticket) {
-      console.error('❌ [TICKET DETAIL] No ticket loaded');
-      return;
+  }
+
+  onAttachmentDeleted(attachmentId: number): void {
+    console.log('🗑️ [TICKET DETAIL] Attachment deleted, reloading ticket');
+    // Reload ticket to update attachments list
+    if (this.ticket) {
+      this.loadTicket(this.ticket.id);
     }
-
-    this.isSubmittingResponse = true;
-    this.responseError = '';
-
-    const bodyText = this.responseForm.value.body!;
-    const files = this.responseForm.value.attachments as any;
-    const internal = this.responseForm.value.internal || false;
-    const hasFiles = files && Array.isArray(files) && files.length > 0;
-
-    console.log('📤 [TICKET DETAIL] Preparing response submission');
-    console.log('   Body text:', bodyText);
-    console.log('   Internal:', internal);
-    console.log('   Has files:', hasFiles);
-
-    let payload: any;
-
-    // If we have files, use FormData
-    if (hasFiles) {
-      console.log('   Building FormData with attachments');
-      const formData = new FormData();
-      formData.append('body', bodyText);
-      
-      if (internal) {
-        formData.append('internal', '1');
-      }
-      
-      (files as File[]).forEach((file: File, index: number) => {
-        console.log(`   - File ${index}:`, file.name, file.size, 'bytes');
-        formData.append('attachments[]', file, file.name);
-      });
-
-      console.log('📋 [TICKET DETAIL] FormData contents:');
-      formData.forEach((value, key) => {
-        if (value instanceof File) {
-          console.log(`   ${key}: [File] ${value.name} (${value.size} bytes)`);
-        } else {
-          console.log(`   ${key}:`, value);
-        }
-      });
-
-      payload = formData;
-    } else {
-      console.log('   Sending as JSON (no attachments)');
-      payload = { body: bodyText };
-      if (internal) {
-        payload.internal = true;
-      }
-      console.log('📋 [TICKET DETAIL] JSON payload:', payload);
-    }
-
-    console.log('📤 [TICKET DETAIL] Submitting to ticket ID:', this.ticket.id);
-
-    this.ticketService.addResponse(this.ticket.id, payload).subscribe({
-      next: (response) => {
-        console.log('✅ [TICKET DETAIL] Response added successfully:', response);
-        this.responseForm.reset({ body: '', attachments: null, internal: false });
-        this.loadTicket(this.ticket!.id);
-        this.isSubmittingResponse = false;
-      },
-      error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to add response:', error);
-        this.responseError = error.message || 'Failed to add response';
-        this.isSubmittingResponse = false;
-      }
-    });
   }
 
   canReopenTicket(): boolean {
@@ -674,6 +483,13 @@ export class TicketDetailPageComponent implements OnInit {
   changeTicketStatus(event: Event): void {
     if (!this.ticket || !this.authService.isAdmin()) return;
 
+    // Prevent status changes on resolved or closed tickets
+    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
+      console.warn('⚠️ [TICKET DETAIL] Cannot change status of resolved/closed ticket. Use reopen instead.');
+      this.errorMessage = 'Cannot change status of resolved or closed tickets. Please reopen the ticket first.';
+      return;
+    }
+
     const newStatus = (event.target as HTMLSelectElement).value;
     
     // Don't do anything if status hasn't changed
@@ -685,8 +501,9 @@ export class TicketDetailPageComponent implements OnInit {
     this.ticketService.changeStatus(this.ticket.id, newStatus).subscribe({
       next: (response) => {
         console.log('✅ [TICKET DETAIL] Status changed successfully:', response);
-        this.ticket = response.data;
         this.isChangingStatus = false;
+        // Reload the full ticket to get responses and assignment history
+        this.loadTicket(this.ticket!.id);
       },
       error: (error) => {
         console.error('❌ [TICKET DETAIL] Failed to change status:', error);
@@ -701,6 +518,13 @@ export class TicketDetailPageComponent implements OnInit {
   changeTicketPriority(event: Event): void {
     if (!this.ticket || !this.authService.isAdmin()) return;
 
+    // Prevent priority changes on resolved or closed tickets
+    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
+      console.warn('⚠️ [TICKET DETAIL] Cannot change priority of resolved/closed ticket.');
+      this.errorMessage = 'Cannot change priority of resolved or closed tickets. Please reopen the ticket first.';
+      return;
+    }
+
     const newPriority = (event.target as HTMLSelectElement).value;
     
     // Don't do anything if priority hasn't changed
@@ -712,8 +536,9 @@ export class TicketDetailPageComponent implements OnInit {
     this.ticketService.changePriority(this.ticket.id, newPriority).subscribe({
       next: (response) => {
         console.log('✅ [TICKET DETAIL] Priority changed successfully:', response);
-        this.ticket = response.data;
         this.isChangingPriority = false;
+        // Reload the full ticket to get responses and assignment history
+        this.loadTicket(this.ticket!.id);
       },
       error: (error) => {
         console.error('❌ [TICKET DETAIL] Failed to change priority:', error);
@@ -741,6 +566,14 @@ export class TicketDetailPageComponent implements OnInit {
 
   assignTicket(): void {
     if (!this.ticket || !this.assignForm.valid || !this.authService.isAdmin()) return;
+
+    // Prevent assignment changes on resolved or closed tickets
+    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
+      console.warn('⚠️ [TICKET DETAIL] Cannot assign resolved/closed ticket.');
+      this.errorMessage = 'Cannot assign resolved or closed tickets. Please reopen the ticket first.';
+      this.closeAssignModal();
+      return;
+    }
 
     const assignedToId = this.assignForm.value.assigned_to;
     if (!assignedToId) return;
