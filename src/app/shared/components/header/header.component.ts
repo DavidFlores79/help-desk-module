@@ -3,6 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { AuthService } from '../../../core/services/auth.service';
+import { LoggerService } from '../../../core/services/logger.service';
 
 @Component({
   selector: 'app-header',
@@ -14,9 +15,16 @@ import { AuthService } from '../../../core/services/auth.service';
         <div class="flex items-center justify-between">
           <!-- Logo and Navigation -->
           <div class="flex items-center gap-8">
-            <h1 class="text-xl font-heading font-bold text-primary-600">
-              {{ 'app.title' | translate }}
-            </h1>
+            <div class="flex items-center gap-3">
+              <img 
+                src="assets/images/brand/logo.png" 
+                alt="Help Desk Logo" 
+                class="h-10 w-auto"
+              />
+              <h1 class="text-xl font-heading font-bold text-primary-600">
+                {{ 'app.title' | translate }}
+              </h1>
+            </div>
             
             <nav class="flex items-center gap-4">
               <a routerLink="/tickets" 
@@ -71,9 +79,10 @@ import { AuthService } from '../../../core/services/auth.service';
 })
 export class HeaderComponent {
   authService = inject(AuthService);
+  private logger = inject(LoggerService);
 
   logout(): void {
-    console.log('🔐 [HEADER] User logging out');
+    this.logger.log('🔐', '[HEADER] User logging out');
     this.authService.logout();
   }
 }
