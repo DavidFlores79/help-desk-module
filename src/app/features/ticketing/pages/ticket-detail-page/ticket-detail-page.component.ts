@@ -259,7 +259,7 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
             <div class="card">
               <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Response</h3>
               
-              <form [formGroup]="responseForm" (ngSubmit)="submitResponse()">
+              <form [formGroup]="responseForm" (ngSubmit)="submitResponse()" (submit)="onFormSubmit($event)">
                 <div class="mb-4">
                   <textarea
                     formControlName="body"
@@ -303,12 +303,32 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                   </div>
                 }
 
-                <button 
-                  type="submit" 
-                  class="btn-primary"
-                  [disabled]="responseForm.invalid || isSubmittingResponse">
-                  {{ isSubmittingResponse ? 'Sending...' : 'Send Response' }}
-                </button>
+                <div class="flex items-center gap-4">
+                  <button 
+                    type="submit" 
+                    class="btn-primary flex-shrink-0"
+                    [disabled]="responseForm.invalid || isSubmittingResponse"
+                    (click)="onButtonClick($event)">
+                    {{ isSubmittingResponse ? 'Sending...' : 'Send Response' }}
+                  </button>
+                  
+                  <div class="text-xs text-gray-500">
+                    @if (responseForm.invalid) {
+                      <span class="text-danger-600">⚠️ Please fill in required fields</span>
+                    } @else {
+                      <span class="text-success-600">✓ Ready to send</span>
+                    }
+                  </div>
+                </div>
+                
+                <!-- Debug info (remove in production) -->
+                @if (false) {
+                  <div class="mt-2 p-2 bg-gray-100 rounded text-xs">
+                    <div>Form valid: {{ responseForm.valid }}</div>
+                    <div>Body valid: {{ responseForm.get('body')?.valid }}</div>
+                    <div>Body value: {{ responseForm.get('body')?.value }}</div>
+                  </div>
+                }
               </form>
             </div>
           }
@@ -408,6 +428,27 @@ export class TicketDetailPageComponent implements OnInit {
         this.loadUsers();
       }
     }
+    
+    // Log form initialization
+    console.log('📝 [TICKET DETAIL] Response form initialized:', {
+      valid: this.responseForm.valid,
+      value: this.responseForm.value,
+      controls: Object.keys(this.responseForm.controls)
+    });
+  }
+  
+  onFormSubmit(event: Event): void {
+    console.log('🔄 [TICKET DETAIL] Form submit event fired', event);
+  }
+  
+  onButtonClick(event: MouseEvent): void {
+    console.log('🖱️ [TICKET DETAIL] Button clicked', {
+      event,
+      formValid: this.responseForm.valid,
+      formValue: this.responseForm.value,
+      isSubmitting: this.isSubmittingResponse,
+      buttonDisabled: this.responseForm.invalid || this.isSubmittingResponse
+    });
   }
 
   loadUsers(): void {
@@ -493,10 +534,25 @@ export class TicketDetailPageComponent implements OnInit {
     console.log('🔄 [TICKET DETAIL] submitResponse called');
     console.log('   Form valid:', this.responseForm.valid);
     console.log('   Form value:', this.responseForm.value);
+    console.log('   Form status:', this.responseForm.status);
     console.log('   Ticket exists:', !!this.ticket);
+    console.log('   Ticket ID:', this.ticket?.id);
+    
+    // Log all form control states
+    Object.keys(this.responseForm.controls).forEach(key => {
+      const control = this.responseForm.get(key);
+      console.log(`   Form control '${key}':`, {
+        valid: control?.valid,
+        invalid: control?.invalid,
+        value: control?.value,
+        errors: control?.errors,
+        touched: control?.touched,
+        dirty: control?.dirty
+      });
+    });
     
     if (this.responseForm.invalid) {
-      console.error('❌ [TICKET DETAIL] Form is invalid');
+      console.error('❌ [TICKET DETAIL] Form is invalid, marking all as touched');
       Object.keys(this.responseForm.controls).forEach(key => {
         const control = this.responseForm.get(key);
         if (control?.invalid) {
