@@ -25,6 +25,8 @@
               }
             ],
             "styles": [
+              "node_modules/filepond/dist/filepond.min.css",
+              "node_modules/filepond-plugin-image-preview/dist/filepond-plugin-image-preview.min.css",
               "src/styles.css"
             ]
           },
