@@ -20,17 +20,20 @@ export class App implements OnInit {
     await this.translationService.init();
     this.translationsReady.set(true);
     
-    console.log('%c🚀 Help Desk Application Started', 'color: #0ea5e9; font-size: 16px; font-weight: bold;');
-    console.log('%c📋 Configuration:', 'color: #0ea5e9; font-weight: bold;');
-    console.table({
-      'Environment': environment.production ? 'Production' : 'Development',
-      'API URL': environment.apiUrl,
-      'API Timeout': `${environment.apiTimeout}ms`,
-      'Retry Attempts': environment.retryAttempts,
-      'Log Level': environment.logLevel,
-      'Language': this.translationService.getCurrentLanguage()
-    });
-    console.log('%c💡 Tip: All HTTP requests will be logged in the console', 'color: #f59e0b;');
-    console.log('═'.repeat(80));
+    // Log configuration only in development
+    if (!environment.production) {
+      console.log('%c🚀 Help Desk Application Started', 'color: #0ea5e9; font-size: 16px; font-weight: bold;');
+      console.log('%c📋 Configuration:', 'color: #0ea5e9; font-weight: bold;');
+      console.table({
+        'Environment': environment.production ? 'Production' : 'Development',
+        'API URL': environment.apiUrl,
+        'API Timeout': `${environment.apiTimeout}ms`,
+        'Retry Attempts': environment.retryAttempts,
+        'Log Level': environment.logLevel,
+        'Language': this.translationService.getCurrentLanguage()
+      });
+      console.log('%c💡 Tip: All HTTP requests will be logged in the console', 'color: #f59e0b;');
+      console.log('═'.repeat(80));
+    }
   }
 }
