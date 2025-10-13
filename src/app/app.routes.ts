@@ -23,6 +23,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/admin/admin.routes').then(m => m.adminRoutes)
   },
   {
+    path: 'settings',
+    canActivate: [authGuard, adminGuard],
+    loadChildren: () => import('./features/settings/settings.routes').then(m => m.settingsRoutes)
+  },
+  {
     path: '**',
     redirectTo: '/tickets'
   }
