@@ -259,7 +259,7 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
             <div class="card">
               <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Response</h3>
               
-              <form [formGroup]="responseForm" (ngSubmit)="submitResponse()" (submit)="onFormSubmit($event)">
+              <form [formGroup]="responseForm" (ngSubmit)="submitResponse()">
                 <div class="mb-4">
                   <textarea
                     formControlName="body"
@@ -304,11 +304,10 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                 }
 
                 <div class="flex items-center gap-4">
-                  <button 
-                    type="submit" 
+                  <button
+                    type="submit"
                     class="btn-primary flex-shrink-0"
-                    [disabled]="responseForm.invalid || isSubmittingResponse"
-                    (click)="onButtonClick($event)">
+                    [disabled]="responseForm.invalid || isSubmittingResponse">
                     {{ isSubmittingResponse ? 'Sending...' : 'Send Response' }}
                   </button>
                   
