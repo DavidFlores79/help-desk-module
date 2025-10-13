@@ -13,12 +13,14 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
   imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   template: `
     <div class="card">
-      <!-- API Diagnostic Info -->
-      <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
-        <p class="font-semibold text-blue-900 mb-1">{{ 'auth.apiConfiguration' | translate }}</p>
-        <p class="text-blue-700">{{ 'auth.apiEndpoint' | translate }} {{ apiUrl }}</p>
-        <p class="text-blue-700 text-xs mt-1">{{ 'auth.checkConsole' | translate }}</p>
-      </div>
+      <!-- API Diagnostic Info (Development Only) -->
+      @if (!isProduction) {
+        <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
+          <p class="font-semibold text-blue-900 mb-1">{{ 'auth.apiConfiguration' | translate }}</p>
+          <p class="text-blue-700">{{ 'auth.apiEndpoint' | translate }} {{ apiUrl }}</p>
+          <p class="text-blue-700 text-xs mt-1">{{ 'auth.checkConsole' | translate }}</p>
+        </div>
+      }
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="mb-4">
@@ -67,11 +69,14 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           {{ isLoading ? ('auth.signingIn' | translate) : ('auth.signIn' | translate) }}
         </button>
 
-        <div class="mt-4 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600">
-          <p class="font-semibold mb-1">{{ 'auth.testCredentials' | translate }}</p>
-          <p>{{ 'auth.email' | translate }}: test@example.com</p>
-          <p>{{ 'auth.password' | translate }}: password</p>
-        </div>
+        <!-- Test Credentials (Development Only) -->
+        @if (!isProduction) {
+          <div class="mt-4 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600">
+            <p class="font-semibold mb-1">{{ 'auth.testCredentials' | translate }}</p>
+            <p>{{ 'auth.email' | translate }}: test@example.com</p>
+            <p>{{ 'auth.password' | translate }}: password</p>
+          </div>
+        }
       </form>
     </div>
   `
@@ -82,8 +87,9 @@ export class LoginFormComponent {
   private router = inject(Router);
   private translationService = inject(TranslationService);
 
-  // Expose API URL for template
+  // Expose API URL and environment for template
   apiUrl = `${environment.apiUrl}/login`;
+  isProduction = environment.production;
 
   loginForm = this.fb.group({
     email: ['', [Validators.required, Validators.email]],
@@ -94,30 +100,38 @@ export class LoginFormComponent {
   errorMessage = '';
 
   constructor() {
-    // Log component initialization
-    console.log('🎯 [LOGIN FORM] Component initialized', {
-      apiUrl: this.apiUrl,
-      environment: environment
-    });
+    // Log component initialization (development only)
+    if (!this.isProduction) {
+      console.log('🎯 [LOGIN FORM] Component initialized', {
+        apiUrl: this.apiUrl,
+        environment: environment
+      });
+    }
   }
 
   onSubmit(): void {
     if (this.loginForm.valid) {
-      console.log('📋 [LOGIN FORM] Form submitted', {
-        email: this.loginForm.value.email,
-        hasPassword: !!this.loginForm.value.password
-      });
+      if (!this.isProduction) {
+        console.log('📋 [LOGIN FORM] Form submitted', {
+          email: this.loginForm.value.email,
+          hasPassword: !!this.loginForm.value.password
+        });
+      }
 
       this.isLoading = true;
       this.errorMessage = '';
 
       this.authService.login(this.loginForm.value as any).subscribe({
         next: (response) => {
-          console.log('✅ [LOGIN FORM] Login successful, navigating to /tickets', response);
+          if (!this.isProduction) {
+            console.log('✅ [LOGIN FORM] Login successful, navigating to /tickets', response);
+          }
           this.router.navigate(['/tickets']);
         },
         error: (error) => {
-          console.error('❌ [LOGIN FORM] Login failed:', error);
+          if (!this.isProduction) {
+            console.error('❌ [LOGIN FORM] Login failed:', error);
+          }
           
           // Create a user-friendly error message
           let message = this.translationService.instant('auth.loginFailed') + ' ';
@@ -135,15 +149,19 @@ export class LoginFormComponent {
           this.isLoading = false;
         },
         complete: () => {
-          console.log('🏁 [LOGIN FORM] Login request completed');
+          if (!this.isProduction) {
+            console.log('🏁 [LOGIN FORM] Login request completed');
+          }
           this.isLoading = false;
         }
       });
     } else {
-      console.warn('⚠️ [LOGIN FORM] Form is invalid', {
-        emailErrors: this.loginForm.get('email')?.errors,
-        passwordErrors: this.loginForm.get('password')?.errors
-      });
+      if (!this.isProduction) {
+        console.warn('⚠️ [LOGIN FORM] Form is invalid', {
+          emailErrors: this.loginForm.get('email')?.errors,
+          passwordErrors: this.loginForm.get('password')?.errors
+        });
+      }
     }
   }
 }
