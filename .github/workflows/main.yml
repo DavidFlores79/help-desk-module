@@ -1,0 +1,65 @@
+name: Deploy Angular App to Hostinger
+
+on:
+  push:
+    branches:
+      - main # Cambia esto a 'production' o la rama que uses para desplegar
+      - develop
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22.13.1' # O la versión de Node.js que necesite tu Angular 17 (LTS es buena opción)
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Build Angular application
+        # El comando que usas normalmente: ng build --configuration=production
+        # Asegúrate que el output path coincida con el valor de SOURCE más abajo.
+        # Por defecto es dist/<nombre-del-proyecto>/browser
+        run: npm run ng build --configuration=production
+
+      - name: Deploy to Hostinger
+        uses: easingthemes/ssh-deploy@v5.0.0 # Revisa la última versión estable en el marketplace
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.HOSTINGER_SSH_KEY }} # TU CLAVE SSH PRIVADA
+          ARGS: "-rlgoDzvc --delete" # Argumentos para rsync. --delete elimina archivos obsoletos en el destino.
+          SOURCE: "dist/help-desk-module/browser/" # ¡VERIFICA ESTA RUTA! Debe ser donde 'ng build' genera los archivos.
+                                               # La barra final '/' es importante para rsync.
+          REMOTE_HOST: ${{ secrets.HOSTINGER_HOST }}
+          REMOTE_USER: ${{ secrets.HOSTINGER_USER }}
+          REMOTE_PORT: ${{ secrets.HOSTINGER_PORT }} # Si no usas el puerto 22, asegúrate que este secreto tenga el valor correcto.
+                                                     # Si es el puerto 22, puedes omitir este secreto y la línea si quieres.
+          TARGET: ${{ secrets.HOSTINGER_TARGET }}    # Debería ser "public_html/" o similar, según el valor de tu secreto.
+                                                     # La barra final '/' es importante si quieres copiar DENTRO de ese directorio.
+          # EXCLUDE: "/dist/, /node_modules/" # Generalmente no es necesario si SOURCE está bien definido
+          EXCLUDE: "pruebas/, qa/, .htaccess"
+      - name: Wait for health check and perform it
+        run: |
+          echo "Esperando 10 segundos para que el servidor se estabilice y el caché se actualice..."
+          sleep 10
+
+          echo "Realizando Health Check en https://helpdesk.enlacetecnologias.mx..."
+          # Opciones de curl:
+          # -f, --fail: Falla silenciosamente en errores HTTP (no muestra HTML/errores, solo retorna un código de error)
+          # -s, --silent: Modo silencioso. No muestra la barra de progreso ni mensajes de error.
+          # -L, --location: Sigue redirecciones.
+          # -o /dev/null: Descarta la salida del cuerpo de la respuesta. Solo nos interesa el código de estado.
+          # --max-time 15: Tiempo máximo en segundos que la operación puede tomar.
+          if curl -fsL -o /dev/null --max-time 15 https://helpdesk.enlacetecnologias.mx; then
+            echo "✔️ Health Check exitoso: La aplicación está funcionando correctamente en helpdesk.enlacetecnologias.mx."
+          else
+            echo "❌ Error en Health Check: La aplicación no está disponible o respondió con un error en helpdesk.enlacetecnologias.mx."
+            echo "   (Esto podría ser un error 4xx o 5xx, o un problema de conexión/timeout)."
+            exit 1
+          fi
