@@ -1,5 +1,26 @@
 # Help Desk Application - Setup Complete ✅
 
+## 🎉 Repository & Git Workflow
+
+### GitHub Repository
+**URL:** https://github.com/DavidFlores79/help-desk-module
+
+### Branch Structure
+```
+main (production)
+├── develop (integration branch)
+    └── feature/new-enhancements (current working branch)
+```
+
+### Git Workflow
+- ✅ **main:** Production-ready code (pushed to GitHub)
+- ✅ **develop:** Integration branch (pushed to GitHub)
+- ✅ **feature/new-enhancements:** Active feature branch for new work
+- 📖 See `GIT_WORKFLOW.md` for complete workflow guide
+
+### Current Status
+You're on `feature/new-enhancements` branch and ready to start development!
+
 ## Overview
 
 A production-ready Angular 20 Help Desk application has been successfully configured with:

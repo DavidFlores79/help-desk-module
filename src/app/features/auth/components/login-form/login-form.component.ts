@@ -3,57 +3,59 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { TranslationService } from '../../../../core/services/translation.service';
 import { environment } from '../../../../../environments/environment';
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-login-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule],
+  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
   template: `
     <div class="card">
       <!-- API Diagnostic Info -->
       <div class="mb-4 p-3 bg-blue-50 border border-blue-200 rounded-lg text-xs">
-        <p class="font-semibold text-blue-900 mb-1">API Configuration:</p>
-        <p class="text-blue-700">Endpoint: {{ apiUrl }}</p>
-        <p class="text-blue-700 text-xs mt-1">Check browser console (F12) for detailed request logs</p>
+        <p class="font-semibold text-blue-900 mb-1">{{ 'auth.apiConfiguration' | translate }}</p>
+        <p class="text-blue-700">{{ 'auth.apiEndpoint' | translate }} {{ apiUrl }}</p>
+        <p class="text-blue-700 text-xs mt-1">{{ 'auth.checkConsole' | translate }}</p>
       </div>
 
       <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
         <div class="mb-4">
-          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">Email</label>
+          <label for="email" class="block text-sm font-medium text-gray-700 mb-2">{{ 'auth.email' | translate }}</label>
           <input
             id="email"
             type="email"
             formControlName="email"
             class="input-field"
             [class.border-danger-500]="loginForm.get('email')?.invalid && loginForm.get('email')?.touched"
-            placeholder="you@example.com"
+            [placeholder]="'auth.emailPlaceholder' | translate"
           />
           @if (loginForm.get('email')?.invalid && loginForm.get('email')?.touched) {
-            <p class="mt-1 text-sm text-danger-600">Please enter a valid email</p>
+            <p class="mt-1 text-sm text-danger-600">{{ 'auth.emailRequired' | translate }}</p>
           }
         </div>
 
         <div class="mb-6">
-          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">Password</label>
+          <label for="password" class="block text-sm font-medium text-gray-700 mb-2">{{ 'auth.password' | translate }}</label>
           <input
             id="password"
             type="password"
             formControlName="password"
             class="input-field"
             [class.border-danger-500]="loginForm.get('password')?.invalid && loginForm.get('password')?.touched"
-            placeholder="••••••••"
+            [placeholder]="'auth.passwordPlaceholder' | translate"
           />
           @if (loginForm.get('password')?.invalid && loginForm.get('password')?.touched) {
-            <p class="mt-1 text-sm text-danger-600">Password is required</p>
+            <p class="mt-1 text-sm text-danger-600">{{ 'auth.passwordRequired' | translate }}</p>
           }
         </div>
 
         @if (errorMessage) {
           <div class="mb-4 p-4 bg-danger-50 border border-danger-200 rounded-lg">
-            <p class="text-sm font-semibold text-danger-900 mb-1">Error:</p>
+            <p class="text-sm font-semibold text-danger-900 mb-1">{{ 'auth.errorLabel' | translate }}</p>
             <p class="text-sm text-danger-700">{{ errorMessage }}</p>
-            <p class="text-xs text-danger-600 mt-2">Check the browser console (F12) for detailed logs</p>
+            <p class="text-xs text-danger-600 mt-2">{{ 'auth.checkConsoleDetailed' | translate }}</p>
           </div>
         }
 
@@ -62,13 +64,13 @@ import { environment } from '../../../../../environments/environment';
           class="w-full btn-primary"
           [disabled]="loginForm.invalid || isLoading"
         >
-          {{ isLoading ? 'Signing in...' : 'Sign In' }}
+          {{ isLoading ? ('auth.signingIn' | translate) : ('auth.signIn' | translate) }}
         </button>
 
         <div class="mt-4 p-2 bg-gray-50 border border-gray-200 rounded text-xs text-gray-600">
-          <p class="font-semibold mb-1">Test Credentials (if available):</p>
-          <p>Email: test@example.com</p>
-          <p>Password: password</p>
+          <p class="font-semibold mb-1">{{ 'auth.testCredentials' | translate }}</p>
+          <p>{{ 'auth.email' | translate }}: test@example.com</p>
+          <p>{{ 'auth.password' | translate }}: password</p>
         </div>
       </form>
     </div>
@@ -78,6 +80,7 @@ export class LoginFormComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private translationService = inject(TranslationService);
 
   // Expose API URL for template
   apiUrl = `${environment.apiUrl}/login`;
@@ -117,15 +120,15 @@ export class LoginFormComponent {
           console.error('❌ [LOGIN FORM] Login failed:', error);
           
           // Create a user-friendly error message
-          let message = 'Login failed. ';
+          let message = this.translationService.instant('auth.loginFailed') + ' ';
           if (error.status === 0) {
-            message += 'Cannot connect to the server. Please check your network connection and ensure the API server is running.';
+            message += this.translationService.instant('auth.cannotConnect');
           } else if (error.status === 404) {
-            message += 'Login endpoint not found. The API URL may be incorrect.';
+            message += this.translationService.instant('auth.endpointNotFound');
           } else if (error.details) {
             message += error.details;
           } else {
-            message += error.message || 'Please try again.';
+            message += error.message || this.translationService.instant('auth.tryAgain');
           }
           
           this.errorMessage = message;

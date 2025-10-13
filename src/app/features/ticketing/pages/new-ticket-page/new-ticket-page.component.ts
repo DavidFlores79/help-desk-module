@@ -6,6 +6,7 @@ import { TicketService } from '../../../../core/services/ticket.service';
 import { CategoryService } from '../../../../core/services/category.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-new-ticket-page',
@@ -15,7 +16,8 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
     RouterModule, 
     ReactiveFormsModule,
     HeaderComponent,
-    FileUploadComponent
+    FileUploadComponent,
+    TranslatePipe
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -27,18 +29,18 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Tickets
+            {{ 'ticket.backToTickets' | translate }}
           </a>
         </div>
 
         <div class="card">
-          <h1 class="text-2xl font-heading font-bold text-gray-900 mb-6">Create New Ticket</h1>
+          <h1 class="text-2xl font-heading font-bold text-gray-900 mb-6">{{ 'ticket.createNewTicket' | translate }}</h1>
 
           <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
             <!-- Title -->
             <div class="mb-4">
               <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                Title <span class="text-danger-600">*</span>
+                {{ 'ticket.title' | translate }} <span class="text-danger-600">*</span>
               </label>
               <input
                 id="title"
@@ -46,17 +48,17 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                 formControlName="title"
                 class="input-field"
                 [class.border-danger-500]="ticketForm.get('title')?.invalid && ticketForm.get('title')?.touched"
-                placeholder="Brief description of your issue"
+                [placeholder]="'ticket.briefDescription' | translate"
               />
               @if (ticketForm.get('title')?.invalid && ticketForm.get('title')?.touched) {
-                <p class="mt-1 text-sm text-danger-600">Title is required</p>
+                <p class="mt-1 text-sm text-danger-600">{{ 'ticket.titleRequired' | translate }}</p>
               }
             </div>
 
             <!-- Description -->
             <div class="mb-4">
               <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                Description <span class="text-danger-600">*</span>
+                {{ 'ticket.description' | translate }} <span class="text-danger-600">*</span>
               </label>
               <textarea
                 id="description"
@@ -64,41 +66,41 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                 rows="5"
                 class="input-field"
                 [class.border-danger-500]="ticketForm.get('description')?.invalid && ticketForm.get('description')?.touched"
-                placeholder="Provide detailed information about your issue"
+                [placeholder]="'ticket.detailedInfo' | translate"
               ></textarea>
               @if (ticketForm.get('description')?.invalid && ticketForm.get('description')?.touched) {
-                <p class="mt-1 text-sm text-danger-600">Description is required</p>
+                <p class="mt-1 text-sm text-danger-600">{{ 'ticket.descriptionRequired' | translate }}</p>
               }
             </div>
 
             <!-- Priority -->
             <div class="mb-4">
               <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
-                Priority <span class="text-danger-600">*</span>
+                {{ 'ticket.priority' | translate }} <span class="text-danger-600">*</span>
               </label>
               <select id="priority" formControlName="priority" class="input-field">
-                <option value="">Select priority</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="">{{ 'ticket.selectPriority' | translate }}</option>
+                <option value="low">{{ 'priority.low' | translate }}</option>
+                <option value="medium">{{ 'priority.medium' | translate }}</option>
+                <option value="high">{{ 'priority.high' | translate }}</option>
+                <option value="urgent">{{ 'priority.urgent' | translate }}</option>
               </select>
               @if (ticketForm.get('priority')?.invalid && ticketForm.get('priority')?.touched) {
-                <p class="mt-1 text-sm text-danger-600">Priority is required</p>
+                <p class="mt-1 text-sm text-danger-600">{{ 'ticket.priorityRequired' | translate }}</p>
               }
             </div>
 
             <!-- Category -->
             <div class="mb-4">
               <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
-                Category
+                {{ 'ticket.category' | translate }}
               </label>
               <select 
                 id="category_id" 
                 formControlName="category_id" 
                 (change)="onCategoryChange()"
                 class="input-field">
-                <option value="">Select a category</option>
+                <option value="">{{ 'ticket.selectCategory' | translate }}</option>
                 @for (category of categories; track category.id) {
                   <option [value]="category.id">{{ category.name }}</option>
                 }
@@ -109,10 +111,10 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
             @if (ticketForm.get('category_id')?.value && items.length > 0) {
               <div class="mb-4">
                 <label for="item_id" class="block text-sm font-medium text-gray-700 mb-2">
-                  Item
+                  {{ 'ticket.item' | translate }}
                 </label>
                 <select id="item_id" formControlName="item_id" class="input-field">
-                  <option value="">Select an item</option>
+                  <option value="">{{ 'ticket.selectItem' | translate }}</option>
                   @for (item of items; track item.id) {
                     <option [value]="item.id">{{ item.name }}</option>
                   }
@@ -123,7 +125,7 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
             <!-- File Upload -->
             <div class="mb-6">
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                Attachments
+                {{ 'ticket.attachments' | translate }}
               </label>
               <app-file-upload
                 formControlName="attachments"
