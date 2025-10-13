@@ -9,6 +9,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
 import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe';
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-tickets-page',
@@ -18,6 +19,11 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
     RouterModule, 
     FormsModule,
     HeaderComponent,
+    TimeAgoPipe,
+    StatusBadgePipe,
+    PriorityBadgePipe,
+    TranslatePipe
+  ],
     TimeAgoPipe,
     StatusBadgePipe,
     PriorityBadgePipe
@@ -30,14 +36,14 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
         <!-- Page Header -->
         <div class="flex items-center justify-between mb-6">
           <div>
-            <h2 class="text-3xl font-heading font-bold text-gray-900">My Tickets</h2>
-            <p class="text-gray-600 mt-1">Manage and track your support requests</p>
+            <h2 class="text-3xl font-heading font-bold text-gray-900">{{ 'ticket.myTickets' | translate }}</h2>
+            <p class="text-gray-600 mt-1">{{ 'ticket.manageTickets' | translate }}</p>
           </div>
           <a routerLink="/tickets/new" class="btn-primary">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            New Ticket
+            {{ 'ticket.newTicket' | translate }}
           </a>
         </div>
 
@@ -45,31 +51,31 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
         <div class="card mb-6">
           <div class="flex flex-wrap gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.status' | translate }}</label>
               <select [(ngModel)]="filters.status" (change)="loadTickets()" class="input-field">
-                <option value="">All Status</option>
-                <option value="open">Open</option>
-                <option value="assigned">Assigned</option>
-                <option value="in_progress">In Progress</option>
-                <option value="awaiting_user">Awaiting User</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
+                <option value="">{{ 'filter.allStatus' | translate }}</option>
+                <option value="open">{{ 'status.open' | translate }}</option>
+                <option value="assigned">{{ 'status.assigned' | translate }}</option>
+                <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
+                <option value="awaiting_user">{{ 'status.pending' | translate }}</option>
+                <option value="resolved">{{ 'status.resolved' | translate }}</option>
+                <option value="closed">{{ 'status.closed' | translate }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.priority' | translate }}</label>
               <select [(ngModel)]="filters.priority" (change)="loadTickets()" class="input-field">
-                <option value="">All Priorities</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="">{{ 'filter.allPriorities' | translate }}</option>
+                <option value="low">{{ 'priority.low' | translate }}</option>
+                <option value="medium">{{ 'priority.medium' | translate }}</option>
+                <option value="high">{{ 'priority.high' | translate }}</option>
+                <option value="urgent">{{ 'priority.urgent' | translate }}</option>
               </select>
             </div>
 
             <div class="flex items-end">
-              <button (click)="clearFilters()" class="btn-secondary">Clear Filters</button>
+              <button (click)="clearFilters()" class="btn-secondary">{{ 'filter.clearFilters' | translate }}</button>
             </div>
           </div>
         </div>

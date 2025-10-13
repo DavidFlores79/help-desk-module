@@ -10,6 +10,7 @@ import { HeaderComponent } from '../../../../shared/components/header/header.com
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
 import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe';
+import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
 @Component({
   selector: 'app-admin-page',
@@ -21,7 +22,8 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
     HeaderComponent,
     TimeAgoPipe,
     StatusBadgePipe,
-    PriorityBadgePipe
+    PriorityBadgePipe,
+    TranslatePipe
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -30,8 +32,8 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
       <main class="max-w-7xl mx-auto px-4 py-8">
         <!-- Page Header -->
         <div class="mb-6">
-          <h2 class="text-3xl font-heading font-bold text-gray-900">Admin Dashboard</h2>
-          <p class="text-gray-600 mt-1">Manage all support tickets</p>
+          <h2 class="text-3xl font-heading font-bold text-gray-900">{{ 'admin.dashboard' | translate }}</h2>
+          <p class="text-gray-600 mt-1">{{ 'admin.manageAllTickets' | translate }}</p>
         </div>
 
         <!-- Stats Cards -->
@@ -39,7 +41,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
           <div class="card bg-blue-50 border-blue-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-blue-600 font-medium">Total Tickets</p>
+                <p class="text-sm text-blue-600 font-medium">{{ 'admin.totalTickets' | translate }}</p>
                 <p class="text-2xl font-bold text-blue-900">{{ stats.total }}</p>
               </div>
               <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -52,7 +54,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
           <div class="card bg-yellow-50 border-yellow-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-yellow-600 font-medium">Open</p>
+                <p class="text-sm text-yellow-600 font-medium">{{ 'admin.open' | translate }}</p>
                 <p class="text-2xl font-bold text-yellow-900">{{ stats.open }}</p>
               </div>
               <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +67,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
           <div class="card bg-purple-50 border-purple-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-purple-600 font-medium">In Progress</p>
+                <p class="text-sm text-purple-600 font-medium">{{ 'admin.inProgress' | translate }}</p>
                 <p class="text-2xl font-bold text-purple-900">{{ stats.inProgress }}</p>
               </div>
               <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -78,7 +80,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
           <div class="card bg-green-50 border-green-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-green-600 font-medium">Resolved</p>
+                <p class="text-sm text-green-600 font-medium">{{ 'admin.resolved' | translate }}</p>
                 <p class="text-2xl font-bold text-green-900">{{ stats.resolved }}</p>
               </div>
               <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -93,34 +95,34 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
         <div class="card mb-6">
           <div class="flex flex-wrap gap-4">
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Status</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.status' | translate }}</label>
               <select [(ngModel)]="filters.status" (change)="loadTickets()" class="input-field">
-                <option value="">All Status</option>
-                <option value="open">Open</option>
-                <option value="assigned">Assigned</option>
-                <option value="in_progress">In Progress</option>
-                <option value="awaiting_user">Awaiting User</option>
-                <option value="resolved">Resolved</option>
-                <option value="closed">Closed</option>
+                <option value="">{{ 'filter.allStatus' | translate }}</option>
+                <option value="open">{{ 'status.open' | translate }}</option>
+                <option value="assigned">{{ 'status.assigned' | translate }}</option>
+                <option value="in_progress">{{ 'status.in_progress' | translate }}</option>
+                <option value="awaiting_user">{{ 'status.pending' | translate }}</option>
+                <option value="resolved">{{ 'status.resolved' | translate }}</option>
+                <option value="closed">{{ 'status.closed' | translate }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Priority</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.priority' | translate }}</label>
               <select [(ngModel)]="filters.priority" (change)="loadTickets()" class="input-field">
-                <option value="">All Priorities</option>
-                <option value="low">Low</option>
-                <option value="medium">Medium</option>
-                <option value="high">High</option>
-                <option value="urgent">Urgent</option>
+                <option value="">{{ 'filter.allPriorities' | translate }}</option>
+                <option value="low">{{ 'priority.low' | translate }}</option>
+                <option value="medium">{{ 'priority.medium' | translate }}</option>
+                <option value="high">{{ 'priority.high' | translate }}</option>
+                <option value="urgent">{{ 'priority.urgent' | translate }}</option>
               </select>
             </div>
 
             <div>
-              <label class="block text-sm font-medium text-gray-700 mb-1">Assigned To</label>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.assignedTo' | translate }}</label>
               <select [(ngModel)]="filters.assigned_to" (change)="loadTickets()" class="input-field">
-                <option value="">All Technicians</option>
-                <option value="unassigned">Unassigned</option>
+                <option value="">{{ 'filter.allTechnicians' | translate }}</option>
+                <option value="unassigned">{{ 'assignment.unassigned' | translate }}</option>
                 @for (tech of technicians; track tech.id) {
                   <option [value]="tech.id">{{ tech.name }}</option>
                 }
@@ -128,7 +130,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
             </div>
 
             <div class="flex items-end">
-              <button (click)="clearFilters()" class="btn-secondary">Clear Filters</button>
+              <button (click)="clearFilters()" class="btn-secondary">{{ 'filter.clearFilters' | translate }}</button>
             </div>
           </div>
         </div>
@@ -145,7 +147,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
                 <thead class="bg-gray-50">
                   <tr>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Ticket
+                      {{ 'admin.ticket' | translate }}
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
