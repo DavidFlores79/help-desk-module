@@ -40,7 +40,7 @@ jobs:
           REMOTE_USER: ${{ secrets.HOSTINGER_USER }}
           REMOTE_PORT: ${{ secrets.HOSTINGER_PORT }} # Si no usas el puerto 22, asegúrate que este secreto tenga el valor correcto.
                                                      # Si es el puerto 22, puedes omitir este secreto y la línea si quieres.
-          TARGET: ${{ secrets.HOSTINGER_TARGET }}    # Debería ser "public_html/" o similar, según el valor de tu secreto.
+          TARGET: "domains/enlacetecnologias.mx/public_html/helpdesk/"
                                                      # La barra final '/' es importante si quieres copiar DENTRO de ese directorio.
           # EXCLUDE: "/dist/, /node_modules/" # Generalmente no es necesario si SOURCE está bien definido
           EXCLUDE: "pruebas/, qa/, .htaccess"
