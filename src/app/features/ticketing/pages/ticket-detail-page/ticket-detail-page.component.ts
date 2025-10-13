@@ -303,11 +303,13 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                   </div>
                 }
 
-                <div class="flex items-center gap-4">
+                <div class="flex items-center gap-4 relative z-10">
                   <button
                     type="submit"
-                    class="btn-primary flex-shrink-0"
-                    [disabled]="responseForm.invalid || isSubmittingResponse">
+                    class="btn-primary flex-shrink-0 hover:bg-primary-700 cursor-pointer relative"
+                    [disabled]="responseForm.invalid || isSubmittingResponse"
+                    (click)="onResponseButtonClick($event)"
+                    style="pointer-events: auto;">
                     {{ isSubmittingResponse ? 'Sending...' : 'Send Response' }}
                   </button>
                   
@@ -321,11 +323,13 @@ import { FileUploadComponent } from '../../../../shared/components/file-upload/f
                 </div>
                 
                 <!-- Debug info (remove in production) -->
-                @if (false) {
+                @if (true) {
                   <div class="mt-2 p-2 bg-gray-100 rounded text-xs">
                     <div>Form valid: {{ responseForm.valid }}</div>
                     <div>Body valid: {{ responseForm.get('body')?.valid }}</div>
                     <div>Body value: {{ responseForm.get('body')?.value }}</div>
+                    <div>Button disabled: {{ responseForm.invalid || isSubmittingResponse }}</div>
+                    <div>Is submitting: {{ isSubmittingResponse }}</div>
                   </div>
                 }
               </form>
@@ -448,6 +452,30 @@ export class TicketDetailPageComponent implements OnInit {
       isSubmitting: this.isSubmittingResponse,
       buttonDisabled: this.responseForm.invalid || this.isSubmittingResponse
     });
+  }
+  
+  onResponseButtonClick(event: MouseEvent): void {
+    console.log('🖱️ [TICKET DETAIL] Response button clicked', {
+      event,
+      formValid: this.responseForm.valid,
+      formValue: this.responseForm.value,
+      isSubmitting: this.isSubmittingResponse,
+      buttonDisabled: this.responseForm.invalid || this.isSubmittingResponse,
+      target: event.target,
+      currentTarget: event.currentTarget,
+      defaultPrevented: event.defaultPrevented,
+      propagationStopped: event.cancelBubble
+    });
+    
+    // If button is not disabled, the form should submit
+    if (!this.responseForm.invalid && !this.isSubmittingResponse) {
+      console.log('✅ [TICKET DETAIL] Button is enabled, form should submit');
+    } else {
+      console.log('⚠️ [TICKET DETAIL] Button is disabled:', {
+        formInvalid: this.responseForm.invalid,
+        isSubmitting: this.isSubmittingResponse
+      });
+    }
   }
 
   loadUsers(): void {
