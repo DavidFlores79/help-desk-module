@@ -11,7 +11,7 @@ This update adds branding assets to the application and implements a proper logg
 **File:** `src/index.html`
 - Updated favicon reference to use the new brand favicon
 - Added Apple touch icon for iOS devices
-- Path: `assets/images/brand/favicon.png`
+- Path: `assets/icons/favicon.png`
 
 **Before:**
 ```html
@@ -20,8 +20,8 @@ This update adds branding assets to the application and implements a proper logg
 
 **After:**
 ```html
-<link rel="icon" type="image/png" href="assets/images/brand/favicon.png">
-<link rel="apple-touch-icon" href="assets/images/brand/favicon.png">
+<link rel="icon" type="image/png" href="assets/icons/favicon.png">
+<link rel="apple-touch-icon" href="assets/icons/favicon.png">
 ```
 
 #### Logo Applied to Header
@@ -143,7 +143,6 @@ src/assets/
 │   └── favicon.png
 ├── images/
 │   └── brand/
-│       ├── favicon.png
 │       └── logo.png
 └── i18n/
     ├── en.json
@@ -254,7 +253,6 @@ You can adjust logging behavior by changing `logLevel` in environment files:
 4. `src/environments/environment.prod.ts` - Log level configuration
 5. Assets added:
    - `src/assets/images/brand/logo.png`
-   - `src/assets/images/brand/favicon.png`
    - `src/assets/icons/favicon.png`
 
 ## Next Steps (Optional)
