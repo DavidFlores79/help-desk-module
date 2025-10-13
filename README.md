@@ -14,6 +14,7 @@ A comprehensive, enterprise-grade help desk ticketing system built with Angular 
 - [Testing](#testing)
 - [Deployment](#deployment)
 - [Code Quality](#code-quality)
+- [Additional Documentation](#additional-documentation)
 
 ## ✨ Features
 
@@ -484,6 +485,15 @@ This project is proprietary and confidential.
 ## 📞 Support
 
 For support, contact the development team or create an issue in the repository.
+
+## 📚 Additional Documentation
+
+More detailed guides and documentation can be found in the `/docs` directory:
+- **Development Guides**: `/docs/guides/` - Testing, debugging, implementation guides
+- **API Documentation**: `TICKETING_API_REQUESTS.md` - Complete API reference
+- **Historical Records**: `/docs/archive/` - Past fixes and feature implementations
+
+See `/docs/README.md` for a complete documentation index.
 
 ---
 
