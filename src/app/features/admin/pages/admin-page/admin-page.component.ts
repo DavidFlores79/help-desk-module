@@ -270,9 +270,13 @@ export class AdminPageComponent implements OnInit {
   }
 
   loadTechnicians(): void {
-    this.userService.getTechnicians().subscribe({
+    this.userService.getAdminsAndSuperUsers().subscribe({
       next: (response) => {
-        this.technicians = response.data || [];
+        // Filter to get only admins (profile_id=1) and superusers (profile_id=2)
+        const allUsers = response.data?.data || [];
+        this.technicians = allUsers.filter(user => 
+          user.profile_id === 1 || user.profile_id === 2
+        );
         console.log('✅ [ADMIN] Technicians loaded:', this.technicians);
       },
       error: (error) => {

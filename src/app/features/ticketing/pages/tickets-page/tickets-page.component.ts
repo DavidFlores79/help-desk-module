@@ -35,7 +35,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
             <h2 class="text-3xl font-heading font-bold text-gray-900">{{ 'ticket.myTickets' | translate }}</h2>
             <p class="text-gray-600 mt-1">{{ 'ticket.manageTickets' | translate }}</p>
           </div>
-          <a routerLink="/tickets/new" class="btn-primary">
+          <a routerLink="/tickets/new" class="btn-primary inline-flex items-center">
             <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
@@ -141,14 +141,14 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
-            <h3 class="mt-2 text-sm font-medium text-gray-900">No tickets found</h3>
-            <p class="mt-1 text-sm text-gray-500">Get started by creating a new support ticket.</p>
+            <h3 class="mt-2 text-sm font-medium text-gray-900">{{ 'ticket.noTickets' | translate }}</h3>
+            <p class="mt-1 text-sm text-gray-500">{{ 'ticket.getStartedMessage' | translate }}</p>
             <div class="mt-6">
-              <a routerLink="/tickets/new" class="btn-primary">
+              <a routerLink="/tickets/new" class="btn-primary inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                Create New Ticket
+                {{ 'ticket.createNewTicket' | translate }}
               </a>
             </div>
           </div>
