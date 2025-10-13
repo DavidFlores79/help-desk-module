@@ -24,10 +24,6 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
     PriorityBadgePipe,
     TranslatePipe
   ],
-    TimeAgoPipe,
-    StatusBadgePipe,
-    PriorityBadgePipe
-  ],
   template: `
     <div class="min-h-screen bg-gray-50">
       <app-header></app-header>
