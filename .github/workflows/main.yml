@@ -41,6 +41,7 @@ jobs:
           port: ${{ secrets.HOSTINGER_PORT }}       # ej. 65002
           source: "dist/help-desk-module/browser/*" # ruta de tu build
           target: "domains/enlacetecnologias.mx/public_html/helpdesk/"
+          exclude: "pruebas/, qa/, .htaccess"
           strip_components: 1   # elimina la carpeta "browser" y copia solo su contenido
           recursive: true
 
