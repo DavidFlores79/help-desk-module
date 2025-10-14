@@ -2,7 +2,7 @@ import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { TicketCategoryService } from '../../../../core/services/ticket-category.service';
+import { TicketCategoryService, CreateTicketCategoryDto, UpdateTicketCategoryDto } from '../../../../core/services/ticket-category.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { TicketCategory } from '../../../../core/models/ticket.model';
@@ -252,21 +252,78 @@ export class TicketCategoriesPageComponent implements OnInit {
     if (this.categoryForm.invalid) return;
 
     this.isSaving = true;
+    this.errorMessage = '';
     const formValue = this.categoryForm.value;
 
-    // Note: API endpoints for create/update are not implemented yet
-    // This is a placeholder for when the API is ready
-    console.log('💾 [CATEGORIES] Would save:', formValue);
-    alert('Ticket Category CRUD API is not implemented yet. This feature will be available once the API endpoints are created.');
-    
-    this.isSaving = false;
-    this.closeModals();
+    if (this.showEditModal && this.editingCategory) {
+      // Update existing category
+      const updateData: UpdateTicketCategoryDto = {
+        name: formValue.name!,
+        description: formValue.description || undefined,
+        active: formValue.active!
+      };
+
+      console.log('💾 [CATEGORIES] Updating category:', this.editingCategory.id, updateData);
+
+      this.ticketCategoryService.updateTicketCategory(this.editingCategory.id, updateData).subscribe({
+        next: (response) => {
+          console.log('✅ [CATEGORIES] Category updated successfully:', response);
+          this.isSaving = false;
+          this.closeModals();
+          this.loadCategories();
+        },
+        error: (error) => {
+          console.error('❌ [CATEGORIES] Failed to update category:', error);
+          this.errorMessage = error.message || 'Failed to update category';
+          this.isSaving = false;
+        }
+      });
+    } else {
+      // Create new category
+      const createData: CreateTicketCategoryDto = {
+        name: formValue.name!,
+        description: formValue.description || undefined,
+        active: formValue.active ?? true
+      };
+
+      console.log('💾 [CATEGORIES] Creating new category:', createData);
+
+      this.ticketCategoryService.createTicketCategory(createData).subscribe({
+        next: (response) => {
+          console.log('✅ [CATEGORIES] Category created successfully:', response);
+          this.isSaving = false;
+          this.closeModals();
+          this.loadCategories();
+        },
+        error: (error) => {
+          console.error('❌ [CATEGORIES] Failed to create category:', error);
+          this.errorMessage = error.message || 'Failed to create category';
+          this.isSaving = false;
+        }
+      });
+    }
   }
 
   toggleCategoryStatus(category: TicketCategory): void {
-    // Note: API endpoint for update is not implemented yet
-    console.log('🔄 [CATEGORIES] Would toggle status for:', category.name);
-    alert('Ticket Category update API is not implemented yet. This feature will be available once the API endpoints are created.');
+    const newStatus = !category.active;
+    const action = newStatus ? 'activate' : 'deactivate';
+
+    if (!confirm(`Are you sure you want to ${action} "${category.name}"?`)) {
+      return;
+    }
+
+    console.log(`🔄 [CATEGORIES] ${action === 'activate' ? 'Activating' : 'Deactivating'} category:`, category.name);
+
+    this.ticketCategoryService.updateTicketCategory(category.id, { active: newStatus }).subscribe({
+      next: (response) => {
+        console.log('✅ [CATEGORIES] Category status updated successfully:', response);
+        this.loadCategories();
+      },
+      error: (error) => {
+        console.error('❌ [CATEGORIES] Failed to update category status:', error);
+        this.errorMessage = error.message || 'Failed to update category status';
+      }
+    });
   }
 
   closeModals(): void {
@@ -274,5 +331,6 @@ export class TicketCategoriesPageComponent implements OnInit {
     this.showEditModal = false;
     this.editingCategory = null;
     this.categoryForm.reset({ active: true });
+    this.errorMessage = '';
   }
 }
