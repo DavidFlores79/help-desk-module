@@ -3,6 +3,7 @@
     "title": "Help Desk",
     "loading": "Loading...",
     "save": "Save",
+    "saving": "Saving...",
     "cancel": "Cancel",
     "delete": "Delete",
     "edit": "Edit",
@@ -20,7 +21,8 @@
     "success": "Success",
     "error": "Error",
     "warning": "Warning",
-    "info": "Information"
+    "info": "Information",
+    "actions": "Actions"
   },
   "auth": {
     "login": "Login",
@@ -88,6 +90,7 @@
     "responses": "Responses",
     "attachments": "Attachments",
     "createTicket": "Create Ticket",
+    "creating": "Creating...",
     "editTicket": "Edit Ticket",
     "deleteTicket": "Delete Ticket",
     "viewTicket": "View Ticket",
@@ -163,6 +166,9 @@
     "uploading": "Uploading...",
     "uploaded": "Uploaded"
   },
+  "fileUpload": {
+    "fileRestrictions": "Maximum 5 files, 10MB each. Supported: Images, PDF, Word documents"
+  },
   "assignment": {
     "assign": "Assign",
     "assignTo": "Assign to",
@@ -215,7 +221,23 @@
     "avgResponseTime": "Average Response Time",
     "ticketsByStatus": "Tickets by Status",
     "ticketsByPriority": "Tickets by Priority",
-    "recentActivity": "Recent Activity"
+    "recentActivity": "Recent Activity",
+    "ticketCategories": "Ticket Categories",
+    "manageCategoriesDescription": "Manage ticket categories for better organization",
+    "newCategory": "New Category",
+    "editCategory": "Edit Category",
+    "noCategories": "No categories found"
+  },
+  "category": {
+    "name": "Name",
+    "description": "Description",
+    "status": "Status",
+    "active": "Active",
+    "inactive": "Inactive",
+    "activate": "Activate",
+    "deactivate": "Deactivate",
+    "createdAt": "Created At",
+    "nameRequired": "Name is required"
   },
   "settings": {
     "settings": "Settings",

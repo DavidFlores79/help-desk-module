@@ -234,8 +234,8 @@ export class TicketService {
     formData.append('description', data.description);
     
     if (data.priority) formData.append('priority', data.priority);
-    if (data.item_id) formData.append('item_id', data.item_id.toString());
-    if (data.category_id) formData.append('category_id', data.category_id.toString());
+    if (data.ticket_category_id) formData.append('ticket_category_id', data.ticket_category_id.toString());
+    if (data.assignment_id) formData.append('assignment_id', data.assignment_id.toString());
     
     if (data.attachments) {
       data.attachments.forEach(file => {

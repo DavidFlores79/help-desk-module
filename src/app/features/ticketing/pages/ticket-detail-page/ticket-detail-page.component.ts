@@ -1,11 +1,12 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, ActivatedRoute, Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, FormsModule, Validators } from '@angular/forms';
 import { TicketService } from '../../../../core/services/ticket.service';
+import { TicketCategoryService } from '../../../../core/services/ticket-category.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserService } from '../../../../core/services/user.service';
-import { Ticket, TicketResponse, User } from '../../../../core/models/ticket.model';
+import { Ticket, TicketResponse, User, TicketCategory } from '../../../../core/models/ticket.model';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
@@ -20,6 +21,7 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
     CommonModule,
     RouterModule,
     ReactiveFormsModule,
+    FormsModule,
     HeaderComponent,
     TimeAgoPipe,
     StatusBadgePipe,
@@ -56,9 +58,21 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                   <span class="text-sm text-gray-500">#{{ ticket.id }}</span>
                   <span [class]="ticket.status | statusBadge">{{ ticket.status_label }}</span>
                   <span [class]="ticket.priority | priorityBadge">{{ ticket.priority_label }}</span>
+                  @if (ticket.ticketCategory || ticket.ticket_category) {
+                    <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
+                      {{ (ticket.ticketCategory || ticket.ticket_category)?.name }}
+                    </span>
+                  }
                 </div>
                 <h1 class="text-2xl font-heading font-bold text-gray-900 mb-2">{{ ticket.title }}</h1>
-                <p class="text-gray-600">{{ ticket.description }}</p>
+                <p class="text-gray-600 mb-2">{{ ticket.description }}</p>
+                <div class="flex items-center gap-2 text-sm text-gray-500">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                          d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                  </svg>
+                  <span>Created by <strong>{{ ticket.user?.name || 'Unknown' }}</strong></span>
+                </div>
               </div>
 
               <!-- Admin Quick Actions -->
@@ -102,12 +116,24 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                 <p class="text-sm font-medium">{{ ticket.created_at | timeAgo }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-500">Category</p>
-                <p class="text-sm font-medium">{{ ticket.category?.name || 'N/A' }}</p>
+                <p class="text-sm text-gray-500 mb-1">Category</p>
+                @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
+                  <select 
+                    [(ngModel)]="selectedCategoryId"
+                    (ngModelChange)="onCategoryChange($event)"
+                    class="text-sm px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    <option value="">Select category...</option>
+                    @for (cat of ticketCategories; track cat.id) {
+                      <option [value]="cat.id">{{ cat.name }}</option>
+                    }
+                  </select>
+                } @else {
+                  <p class="text-sm font-medium">{{ (ticket.ticketCategory || ticket.ticket_category)?.name || 'N/A' }}</p>
+                }
               </div>
               <div>
-                <p class="text-sm text-gray-500">Item</p>
-                <p class="text-sm font-medium">{{ ticket.item?.name || 'N/A' }}</p>
+                <p class="text-sm text-gray-500">Related Assignment</p>
+                <p class="text-sm font-medium">{{ ticket.assignment?.id ? ('#' + ticket.assignment?.id) : 'N/A' }}</p>
               </div>
               <div>
                 <p class="text-sm text-gray-500">Assigned To</p>
@@ -285,11 +311,14 @@ export class TicketDetailPageComponent implements OnInit {
   private router = inject(Router);
   private fb = inject(FormBuilder);
   private ticketService = inject(TicketService);
+  private ticketCategoryService = inject(TicketCategoryService);
   private userService = inject(UserService);
   authService = inject(AuthService);
 
   ticket: Ticket | null = null;
   availableUsers: User[] = [];
+  ticketCategories: TicketCategory[] = [];
+  selectedCategoryId: number | string = '';
   isLoading = false;
   isLoadingUsers = false;
   errorMessage = '';
@@ -312,8 +341,28 @@ export class TicketDetailPageComponent implements OnInit {
       // Load available users for assignment if admin
       if (this.authService.isAdmin()) {
         this.loadUsers();
+        this.loadTicketCategories();
       }
     }
+  }
+  
+  loadTicketCategories(): void {
+    // Load all categories (active and inactive) so we can show existing selections
+    this.ticketCategoryService.getTicketCategories(false).subscribe({
+      next: (response) => {
+        this.ticketCategories = response.data || [];
+        console.log('✅ [TICKET DETAIL] Categories loaded:', this.ticketCategories.length);
+        // Debug: log current ticket category if exists
+        if (this.ticket) {
+          const currentCat = this.ticket.ticketCategory || this.ticket.ticket_category;
+          console.log('🔍 [TICKET DETAIL] Current ticket category:', currentCat);
+          console.log('🔍 [TICKET DETAIL] Current category ID:', this.getCurrentCategoryId(this.ticket));
+        }
+      },
+      error: (error) => {
+        console.error('❌ [TICKET DETAIL] Failed to load categories:', error);
+      }
+    });
   }
   
   loadUsers(): void {
@@ -359,6 +408,12 @@ export class TicketDetailPageComponent implements OnInit {
     this.ticketService.getTicket(id).subscribe({
       next: (response) => {
         this.ticket = response.data;
+        
+        // Set selected category ID for dropdown
+        const category = this.ticket.ticketCategory || this.ticket.ticket_category;
+        this.selectedCategoryId = category ? category.id : '';
+        console.log('🔍 [TICKET DETAIL] Set selectedCategoryId to:', this.selectedCategoryId);
+        
         this.isLoading = false;
         console.log('✅ [TICKET DETAIL] Ticket loaded successfully');
         console.log('   Ticket ID:', this.ticket.id);
@@ -550,12 +605,48 @@ export class TicketDetailPageComponent implements OnInit {
     });
   }
 
+  onCategoryChange(newCategoryId: number | string): void {
+    if (!this.ticket || !this.authService.isAdmin()) return;
+
+    // Prevent changes on resolved or closed tickets
+    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
+      console.warn('⚠️ [TICKET DETAIL] Cannot change category of resolved/closed ticket.');
+      this.errorMessage = 'Cannot change category of resolved or closed tickets. Please reopen the ticket first.';
+      // Reset to original value
+      const category = this.ticket.ticketCategory || this.ticket.ticket_category;
+      this.selectedCategoryId = category ? category.id : '';
+      return;
+    }
+
+    console.log('🔄 [TICKET DETAIL] Changing category to', newCategoryId);
+
+    this.ticketService.updateTicket(this.ticket.id, { 
+      ticket_category_id: newCategoryId ? +newCategoryId : null 
+    }).subscribe({
+      next: (response) => {
+        console.log('✅ [TICKET DETAIL] Category changed successfully:', response);
+        // Reload the full ticket to get updated category
+        this.loadTicket(this.ticket!.id);
+      },
+      error: (error) => {
+        console.error('❌ [TICKET DETAIL] Failed to change category:', error);
+        this.errorMessage = error.message || 'Failed to change category';
+        // Reset to original value
+        const category = this.ticket!.ticketCategory || this.ticket!.ticket_category;
+        this.selectedCategoryId = category ? category.id : '';
+      }
+    });
+  }
+
   openAssignModal(): void {
     if (!this.authService.isAdmin()) return;
     this.showAssignModal = true;
     // Pre-select current assigned user if exists
     if (this.ticket?.assigned_to) {
-      this.assignForm.patchValue({ assigned_to: this.ticket.assigned_to });
+      const assignedId = typeof this.ticket.assigned_to === 'number' 
+        ? this.ticket.assigned_to 
+        : this.ticket.assigned_to.id;
+      this.assignForm.patchValue({ assigned_to: assignedId });
     }
   }
 
@@ -730,5 +821,27 @@ export class TicketDetailPageComponent implements OnInit {
     }
     
     return 'Unassigned';
+  }
+
+  /**
+   * Get current category ID as string for dropdown binding
+   */
+  getCurrentCategoryId(ticket: Ticket): string {
+    const category = ticket.ticketCategory || ticket.ticket_category;
+    if (!category) {
+      console.log('🔍 [CATEGORY] No category found for ticket');
+      return '';
+    }
+    const categoryId = String(category.id);
+    console.log('🔍 [CATEGORY] Category ID for dropdown:', categoryId, 'Category name:', category.name);
+    
+    // Check if this ID exists in loaded categories
+    const exists = this.ticketCategories.some(c => String(c.id) === categoryId);
+    if (!exists) {
+      console.warn('⚠️ [CATEGORY] Category ID', categoryId, 'not found in loaded categories!');
+      console.log('Available categories:', this.ticketCategories.map(c => ({ id: c.id, name: c.name })));
+    }
+    
+    return categoryId;
   }
 }

@@ -1,5 +1,6 @@
-import { Component, inject } from '@angular/core';
+import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
+import { FormsModule } from '@angular/forms';
 import { TranslatePipe } from '../../pipes/translate.pipe';
 import { TranslationService } from '../../../core/services/translation.service';
 import { AuthService } from '../../../core/services/auth.service';
@@ -7,7 +8,7 @@ import { AuthService } from '../../../core/services/auth.service';
 @Component({
   selector: 'app-language-selector',
   standalone: true,
-  imports: [CommonModule, TranslatePipe],
+  imports: [CommonModule, FormsModule, TranslatePipe],
   template: `
     <div class="language-selector">
       <label class="block text-sm font-medium text-gray-700 mb-2">
@@ -16,7 +17,7 @@ import { AuthService } from '../../../core/services/auth.service';
       
       <div class="relative">
         <select
-          [value]="translationService.getCurrentLanguage()"
+          [(ngModel)]="currentLanguage"
           (change)="onLanguageChange($event)"
           [disabled]="!canChangeLanguage()"
           class="input-field appearance-none cursor-pointer"
@@ -74,13 +75,19 @@ import { AuthService } from '../../../core/services/auth.service';
     }
   `]
 })
-export class LanguageSelectorComponent {
+export class LanguageSelectorComponent implements OnInit {
   translationService = inject(TranslationService);
   private authService = inject(AuthService);
 
   availableLanguages = this.translationService.getAvailableLanguages();
+  currentLanguage = this.translationService.getCurrentLanguage();
   successMessage = '';
   errorMessage = '';
+
+  ngOnInit(): void {
+    // Ensure current language is set on component init
+    this.currentLanguage = this.translationService.getCurrentLanguage();
+  }
 
   canChangeLanguage(): boolean {
     return true; // Allow all users to change language
@@ -94,7 +101,7 @@ export class LanguageSelectorComponent {
       this.errorMessage = this.translationService.instant('settings.onlyAdmins');
       // Reset to current language
       setTimeout(() => {
-        select.value = this.translationService.getCurrentLanguage();
+        this.currentLanguage = this.translationService.getCurrentLanguage();
       }, 0);
       return;
     }
@@ -105,15 +112,12 @@ export class LanguageSelectorComponent {
 
     try {
       this.translationService.changeLanguage(newLang);
-      this.successMessage = this.translationService.instant('settings.languageChanged');
-      
-      // Clear success message after 3 seconds
-      setTimeout(() => {
-        this.successMessage = '';
-      }, 3000);
+      // Note: The page will reload, so the success message won't be visible
     } catch (error) {
       this.errorMessage = this.translationService.instant('settings.languageError');
       console.error('Error changing language:', error);
+      // Reset to current language on error
+      this.currentLanguage = this.translationService.getCurrentLanguage();
     }
   }
 }
