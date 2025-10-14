@@ -21,7 +21,7 @@ import { LanguageSelectorComponent } from '../../../../shared/components/languag
 
       <main class="container-custom py-8">
         <!-- Page Header -->
-        <div class="mb-8">
+        <div class="mb-8 ml-2">
           <h1 class="text-3xl font-heading font-bold text-gray-900 mb-2">
             {{ 'settings.settings' | translate }}
           </h1>
