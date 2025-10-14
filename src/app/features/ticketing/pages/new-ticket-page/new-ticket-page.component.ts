@@ -3,7 +3,7 @@ import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TicketService } from '../../../../core/services/ticket.service';
-import { CategoryService } from '../../../../core/services/category.service';
+import { TicketCategoryService } from '../../../../core/services/ticket-category.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
@@ -92,35 +92,19 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
             <!-- Category -->
             <div class="mb-4">
-              <label for="category_id" class="block text-sm font-medium text-gray-700 mb-2">
+              <label for="ticket_category_id" class="block text-sm font-medium text-gray-700 mb-2">
                 {{ 'ticket.category' | translate }}
               </label>
               <select 
-                id="category_id" 
-                formControlName="category_id" 
-                (change)="onCategoryChange()"
+                id="ticket_category_id" 
+                formControlName="ticket_category_id" 
                 class="input-field">
                 <option value="">{{ 'ticket.selectCategory' | translate }}</option>
-                @for (category of categories; track category.id) {
+                @for (category of ticketCategories; track category.id) {
                   <option [value]="category.id">{{ category.name }}</option>
                 }
               </select>
             </div>
-
-            <!-- Item (if category selected) -->
-            @if (ticketForm.get('category_id')?.value && items.length > 0) {
-              <div class="mb-4">
-                <label for="item_id" class="block text-sm font-medium text-gray-700 mb-2">
-                  {{ 'ticket.item' | translate }}
-                </label>
-                <select id="item_id" formControlName="item_id" class="input-field">
-                  <option value="">{{ 'ticket.selectItem' | translate }}</option>
-                  @for (item of items; track item.id) {
-                    <option [value]="item.id">{{ item.name }}</option>
-                  }
-                </select>
-              </div>
-            }
 
             <!-- File Upload -->
             <div class="mb-6">
@@ -134,7 +118,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 [acceptedFileTypes]="['image/*', 'application/pdf', '.doc', '.docx']"
               ></app-file-upload>
               <p class="mt-1 text-xs text-gray-500">
-                Maximum 5 files, 10MB each. Supported: Images, PDF, Word documents
+                {{ 'fileUpload.fileRestrictions' | translate }}
               </p>
             </div>
 
@@ -152,13 +136,13 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 (click)="cancel()"
                 class="btn-secondary"
                 [disabled]="isSubmitting">
-                Cancel
+                {{ 'app.cancel' | translate }}
               </button>
               <button 
                 type="submit" 
                 class="btn-primary"
                 [disabled]="ticketForm.invalid || isSubmitting">
-                {{ isSubmitting ? 'Creating...' : 'Create Ticket' }}
+                {{ isSubmitting ? ('ticket.creating' | translate) : ('ticket.createTicket' | translate) }}
               </button>
             </div>
           </form>
@@ -170,57 +154,36 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 export class NewTicketPageComponent implements OnInit {
   private fb = inject(FormBuilder);
   private ticketService = inject(TicketService);
-  private categoryService = inject(CategoryService);
+  private ticketCategoryService = inject(TicketCategoryService);
   private router = inject(Router);
 
   ticketForm = this.fb.group({
     title: ['', Validators.required],
     description: ['', Validators.required],
-    priority: ['', Validators.required],
-    category_id: [''],
-    item_id: [''],
+    priority: ['medium', Validators.required],
+    ticket_category_id: [''],
     attachments: [[]]
   });
 
-  categories: any[] = [];
-  items: any[] = [];
+  ticketCategories: any[] = [];
   isSubmitting = false;
   errorMessage = '';
 
   ngOnInit(): void {
     console.log('📋 [NEW TICKET] Component initialized');
-    this.loadCategories();
+    this.loadTicketCategories();
   }
 
-  loadCategories(): void {
-    this.categoryService.getCategories().subscribe({
+  loadTicketCategories(): void {
+    this.ticketCategoryService.getTicketCategories(true).subscribe({
       next: (response) => {
-        this.categories = response.data || [];
-        console.log('✅ [NEW TICKET] Categories loaded:', this.categories);
+        this.ticketCategories = response.data || [];
+        console.log('✅ [NEW TICKET] Ticket categories loaded:', this.ticketCategories);
       },
       error: (error) => {
-        console.error('❌ [NEW TICKET] Failed to load categories:', error);
+        console.error('❌ [NEW TICKET] Failed to load ticket categories:', error);
       }
     });
-  }
-
-  onCategoryChange(): void {
-    const categoryId = this.ticketForm.get('category_id')?.value;
-    if (categoryId) {
-      this.categoryService.getItemsByCategory(+categoryId).subscribe({
-        next: (response) => {
-          this.items = response.data || [];
-          console.log('✅ [NEW TICKET] Items loaded:', this.items);
-        },
-        error: (error) => {
-          console.error('❌ [NEW TICKET] Failed to load items:', error);
-          this.items = [];
-        }
-      });
-    } else {
-      this.items = [];
-      this.ticketForm.patchValue({ item_id: '' });
-    }
   }
 
   onSubmit(): void {
@@ -235,12 +198,8 @@ export class NewTicketPageComponent implements OnInit {
       formData.append('description', formValue.description!);
       formData.append('priority', formValue.priority!);
 
-      if (formValue.category_id) {
-        formData.append('category_id', formValue.category_id);
-      }
-
-      if (formValue.item_id) {
-        formData.append('item_id', formValue.item_id);
+      if (formValue.ticket_category_id) {
+        formData.append('ticket_category_id', formValue.ticket_category_id);
       }
 
       // Add files

@@ -32,6 +32,26 @@ export interface Category {
   name: string;
 }
 
+export interface TicketCategory {
+  id: number;
+  name: string;
+  description?: string;
+  active: boolean;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface Assignment {
+  id: number;
+  user_id: number;
+  item_id: number;
+  assigned_date: string;
+  returned_date?: string;
+  status: string;
+  user?: User;
+  item?: Item;
+}
+
 export interface Attachment {
   id: number;
   filename: string;
@@ -70,9 +90,9 @@ export interface TicketAssignment {
 export interface Ticket {
   id: number;
   user_id: number;
-  item_id: number | null;
-  category_id: number | null;
-  assigned_to: number | null;
+  ticket_category_id: number | null;
+  assignment_id: number | null;
+  assigned_to: number | User | null;  // Can be ID or User object
   title: string;
   description: string;
   status: TicketStatus;
@@ -87,8 +107,9 @@ export interface Ticket {
   deleted_at: string | null;
   user: User;
   createdBy?: User;  // Alias for user
-  item: Item | null;
-  category: Category | null;
+  ticketCategory?: TicketCategory | null;
+  ticket_category?: TicketCategory | null;  // API snake_case alias
+  assignment?: Assignment | null;
   assignedTo: User | null;
   responses?: TicketResponse[];
   assignments?: TicketAssignment[];
@@ -106,8 +127,8 @@ export interface TicketListResponse {
 export interface CreateTicketDto {
   title: string;
   description: string;
-  item_id?: number;
-  category_id?: number;
+  ticket_category_id?: number;
+  assignment_id?: number;
   priority?: TicketPriority;
   attachments?: File[];
 }
@@ -115,8 +136,8 @@ export interface CreateTicketDto {
 export interface UpdateTicketDto {
   title?: string;
   description?: string;
-  item_id?: number;
-  category_id?: number;
+  ticket_category_id?: number;
+  assignment_id?: number;
   status?: TicketStatus;
   priority?: TicketPriority;
 }

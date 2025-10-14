@@ -3,6 +3,7 @@
     "title": "Mesa de Ayuda",
     "loading": "Cargando...",
     "save": "Guardar",
+    "saving": "Guardando...",
     "cancel": "Cancelar",
     "delete": "Eliminar",
     "edit": "Editar",
@@ -20,7 +21,8 @@
     "success": "Éxito",
     "error": "Error",
     "warning": "Advertencia",
-    "info": "Información"
+    "info": "Información",
+    "actions": "Acciones"
   },
   "auth": {
     "login": "Iniciar Sesión",
@@ -88,6 +90,7 @@
     "responses": "Respuestas",
     "attachments": "Archivos adjuntos",
     "createTicket": "Crear Ticket",
+    "creating": "Creando...",
     "editTicket": "Editar Ticket",
     "deleteTicket": "Eliminar Ticket",
     "viewTicket": "Ver Ticket",
@@ -163,6 +166,9 @@
     "uploading": "Subiendo...",
     "uploaded": "Subido"
   },
+  "fileUpload": {
+    "fileRestrictions": "Máximo 5 archivos, 10MB cada uno. Soportado: Imágenes, PDF, documentos Word"
+  },
   "assignment": {
     "assign": "Asignar",
     "assignTo": "Asignar a",
@@ -215,7 +221,23 @@
     "avgResponseTime": "Tiempo Promedio de Respuesta",
     "ticketsByStatus": "Tickets por Estado",
     "ticketsByPriority": "Tickets por Prioridad",
-    "recentActivity": "Actividad Reciente"
+    "recentActivity": "Actividad Reciente",
+    "ticketCategories": "Categorías de Tickets",
+    "manageCategoriesDescription": "Administrar categorías de tickets para mejor organización",
+    "newCategory": "Nueva Categoría",
+    "editCategory": "Editar Categoría",
+    "noCategories": "No se encontraron categorías"
+  },
+  "category": {
+    "name": "Nombre",
+    "description": "Descripción",
+    "status": "Estado",
+    "active": "Activa",
+    "inactive": "Inactiva",
+    "activate": "Activar",
+    "deactivate": "Desactivar",
+    "createdAt": "Fecha de Creación",
+    "nameRequired": "El nombre es requerido"
   },
   "settings": {
     "settings": "Configuración",

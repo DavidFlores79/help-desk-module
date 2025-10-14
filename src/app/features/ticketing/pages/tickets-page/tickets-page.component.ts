@@ -108,20 +108,27 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                   <span [class]="ticket.priority | priorityBadge">
                     {{ ticket.priority_label }}
                   </span>
-                  @if (ticket.category) {
+                  @if (ticket.ticketCategory || ticket.ticket_category) {
                     <span class="badge badge-gray">
-                      {{ ticket.category.name }}
+                      {{ (ticket.ticketCategory || ticket.ticket_category)?.name }}
                     </span>
                   }
                 </div>
 
                 <div class="flex items-center justify-between text-sm text-gray-500">
                   <div class="flex items-center gap-4">
+                    <span class="flex items-center gap-1">
+                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                      </svg>
+                      {{ ticket.user?.name || 'Unknown' }}
+                    </span>
                     @if (ticket.assignedTo) {
-                      <span class="flex items-center gap-1">
+                      <span class="flex items-center gap-1 text-primary-600">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
-                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
                         {{ ticket.assignedTo.name }}
                       </span>

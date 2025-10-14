@@ -3,9 +3,10 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { TicketService } from '../../../../core/services/ticket.service';
+import { TicketCategoryService } from '../../../../core/services/ticket-category.service';
 import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { Ticket } from '../../../../core/models/ticket.model';
+import { Ticket, TicketCategory } from '../../../../core/models/ticket.model';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
@@ -150,6 +151,9 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                       {{ 'admin.ticket' | translate }}
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Category
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Status
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
@@ -169,7 +173,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 <tbody class="bg-white divide-y divide-gray-200">
                   @if (tickets.length === 0) {
                     <tr>
-                      <td colspan="6" class="px-6 py-8 text-center text-gray-500">
+                      <td colspan="7" class="px-6 py-8 text-center text-gray-500">
                         No tickets found
                       </td>
                     </tr>
@@ -180,9 +184,19 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                         <div class="flex items-start">
                           <div>
                             <p class="text-sm font-medium text-gray-900">{{ ticket.title }}</p>
-                            <p class="text-sm text-gray-500">#{{ ticket.id }} - {{ ticket.createdBy?.name }}</p>
+                            <p class="text-sm text-gray-500">#{{ ticket.id }} - {{ ticket.user?.name || ticket.createdBy?.name || 'Unknown' }}</p>
                           </div>
                         </div>
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap">
+                        <select 
+                          (change)="onCategoryChangeEvent(ticket, $event)"
+                          class="text-xs px-2 py-1 border border-gray-300 rounded bg-white">
+                          <option [value]="''" [selected]="!getSelectedCategoryId(ticket.id)">No category</option>
+                          @for (cat of ticketCategories; track cat.id) {
+                            <option [value]="String(cat.id)" [selected]="getSelectedCategoryId(ticket.id) === String(cat.id)">{{ cat.name }}</option>
+                          }
+                        </select>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         <span [class]="ticket.status | statusBadge">
@@ -195,7 +209,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                         </span>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        @if (!ticket.assignedTo) {
+                        @if (!ticket.assignedTo && !ticket.assigned_to) {
                           <select 
                             (change)="assignTicket(ticket, $event)"
                             class="text-sm border-gray-300 rounded-md">
@@ -206,7 +220,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                           </select>
                         } @else {
                           <div class="flex items-center gap-2">
-                            <span class="text-sm text-gray-900">{{ ticket.assignedTo.name }}</span>
+                            <span class="text-sm text-gray-900">{{ getAssignedUserName(ticket) }}</span>
                             <button 
                               (click)="reassignTicket(ticket)"
                               class="text-xs text-primary-600 hover:text-primary-700"
@@ -245,11 +259,17 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 })
 export class AdminPageComponent implements OnInit {
   private ticketService = inject(TicketService);
+  private ticketCategoryService = inject(TicketCategoryService);
   private userService = inject(UserService);
   authService = inject(AuthService);
 
+  // Make String available in template
+  String = String;
+  
   tickets: Ticket[] = [];
   technicians: any[] = [];
+  ticketCategories: TicketCategory[] = [];
+  selectedCategories: Map<number, string> = new Map();
   filters: any = {
     status: '',
     priority: '',
@@ -266,7 +286,22 @@ export class AdminPageComponent implements OnInit {
   ngOnInit(): void {
     console.log('👨‍💼 [ADMIN] Dashboard initialized');
     this.loadTechnicians();
+    this.loadTicketCategories();
     this.loadTickets();
+  }
+  
+  loadTicketCategories(): void {
+    // Load all categories (active and inactive) so we can show existing selections
+    this.ticketCategoryService.getTicketCategories(false).subscribe({
+      next: (response) => {
+        this.ticketCategories = response.data || [];
+        console.log('✅ [ADMIN] Categories loaded:', this.ticketCategories.length);
+        console.log('🔍 [ADMIN] Category IDs:', this.ticketCategories.map(c => ({ id: c.id, name: c.name })));
+      },
+      error: (error) => {
+        console.error('❌ [ADMIN] Failed to load categories:', error);
+      }
+    });
   }
 
   loadTechnicians(): void {
@@ -297,6 +332,18 @@ export class AdminPageComponent implements OnInit {
     this.ticketService.getTickets(filters).subscribe({
       next: (response) => {
         this.tickets = response.data.data || [];
+        
+        // Initialize selected categories map
+        this.selectedCategories.clear();
+        this.tickets.forEach(ticket => {
+          const category = ticket.ticketCategory || ticket.ticket_category;
+          const categoryId = category ? String(category.id) : '';
+          this.selectedCategories.set(ticket.id, categoryId);
+          console.log('🔍 [ADMIN] Set category for ticket', ticket.id, ':', categoryId, 'Category:', category);
+        });
+        
+        console.log('🔍 [ADMIN] All selected categories:', Array.from(this.selectedCategories.entries()));
+        
         this.calculateStats();
         this.isLoading = false;
         console.log('✅ [ADMIN] Tickets loaded:', this.tickets.length);
@@ -336,6 +383,28 @@ export class AdminPageComponent implements OnInit {
   reassignTicket(ticket: Ticket): void {
     // Clear assignment and show dropdown again
     ticket.assignedTo = null;
+    ticket.assigned_to = null;
+  }
+
+  getAssignedUserName(ticket: Ticket): string {
+    // Try to get the name from assignedTo object
+    if (ticket.assignedTo && typeof ticket.assignedTo === 'object') {
+      return ticket.assignedTo.name || 'Unknown';
+    }
+    
+    // If assigned_to is a number (ID), try to find the user in technicians list
+    if (ticket.assigned_to && typeof ticket.assigned_to === 'number') {
+      const tech = this.technicians.find(t => t.id === ticket.assigned_to);
+      if (tech) return tech.name;
+      return `User #${ticket.assigned_to}`;
+    }
+    
+    // If assigned_to is an object (API snake_case)
+    if (ticket.assigned_to && typeof ticket.assigned_to === 'object') {
+      return (ticket.assigned_to as any).name || 'Unknown';
+    }
+    
+    return 'Unassigned';
   }
 
   updateStatus(ticket: Ticket): void {
@@ -364,6 +433,37 @@ export class AdminPageComponent implements OnInit {
     }
   }
 
+  getSelectedCategoryId(ticketId: number): string {
+    const categoryId = String(this.selectedCategories.get(ticketId) || '');
+    console.log('🔍 [ADMIN] Getting category for ticket', ticketId, ':', categoryId);
+    return categoryId;
+  }
+
+  onCategoryChangeEvent(ticket: Ticket, event: Event): void {
+    const newCategoryId = (event.target as HTMLSelectElement).value;
+    this.onCategoryChange(ticket, newCategoryId);
+  }
+
+  onCategoryChange(ticket: Ticket, newCategoryId: string): void {
+    console.log('🔄 [ADMIN] Changing category for ticket', ticket.id, 'to', newCategoryId);
+
+    this.ticketService.updateTicket(ticket.id, { 
+      ticket_category_id: newCategoryId ? +newCategoryId : null 
+    }).subscribe({
+      next: () => {
+        console.log('✅ [ADMIN] Category changed successfully');
+        this.loadTickets();
+      },
+      error: (error) => {
+        console.error('❌ [ADMIN] Failed to change category:', error);
+        alert('Failed to change category: ' + error.message);
+        // Reset to original value
+        const category = ticket.ticketCategory || ticket.ticket_category;
+        this.selectedCategories.set(ticket.id, category ? String(category.id) : '');
+      }
+    });
+  }
+
   clearFilters(): void {
     this.filters = {
       status: '',
@@ -371,5 +471,24 @@ export class AdminPageComponent implements OnInit {
       assigned_to: ''
     };
     this.loadTickets();
+  }
+
+  /**
+   * Get current category ID as string for dropdown binding
+   */
+  getCurrentCategoryId(ticket: Ticket): string {
+    const category = ticket.ticketCategory || ticket.ticket_category;
+    if (!category) {
+      return '';
+    }
+    const categoryId = String(category.id);
+    
+    // Check if this ID exists in loaded categories
+    const exists = this.ticketCategories.some(c => String(c.id) === categoryId);
+    if (!exists) {
+      console.warn('⚠️ [ADMIN] Category ID', categoryId, 'not found in loaded categories for ticket', ticket.id);
+    }
+    
+    return categoryId;
   }
 }
