@@ -130,17 +130,19 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
             }
 
             <!-- Actions -->
-            <div class="flex items-center justify-end gap-4">
+            <div class="flex items-center justify-end gap-4 relative z-50">
               <button 
                 type="button" 
                 (click)="cancel()"
-                class="btn-secondary"
+                class="btn-secondary relative z-50 pointer-events-auto"
+                style="pointer-events: auto !important; position: relative; z-index: 9999;"
                 [disabled]="isSubmitting">
                 {{ 'app.cancel' | translate }}
               </button>
               <button 
                 type="submit" 
-                class="btn-primary"
+                class="btn-primary relative z-50 pointer-events-auto"
+                style="pointer-events: auto !important; position: relative; z-index: 9999;"
                 [disabled]="ticketForm.invalid || isSubmitting">
                 {{ isSubmitting ? ('ticket.creating' | translate) : ('ticket.createTicket' | translate) }}
               </button>
