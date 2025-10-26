@@ -114,6 +114,12 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                 <p class="text-xs sm:text-sm text-gray-500">Created</p>
                 <p class="text-xs sm:text-sm font-medium">{{ ticket.created_at | timeAgo }}</p>
               </div>
+              @if (ticket.resolved_at && (ticket.status === 'resolved' || ticket.status === 'closed')) {
+                <div>
+                  <p class="text-xs sm:text-sm text-gray-500">Resolved</p>
+                  <p class="text-xs sm:text-sm font-medium text-green-600">{{ ticket.resolved_at | timeAgo }}</p>
+                </div>
+              }
               <div>
                 <p class="text-xs sm:text-sm text-gray-500 mb-1">Category</p>
                 @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {

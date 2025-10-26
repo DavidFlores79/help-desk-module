@@ -166,6 +166,9 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                       Created
                     </th>
                     <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Resolved
+                    </th>
+                    <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                       Actions
                     </th>
                   </tr>
@@ -173,7 +176,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 <tbody class="bg-white divide-y divide-gray-200">
                   @if (tickets.length === 0) {
                     <tr>
-                      <td colspan="7" class="px-6 py-8 text-center text-gray-500">
+                      <td colspan="8" class="px-6 py-8 text-center text-gray-500">
                         No tickets found
                       </td>
                     </tr>
@@ -232,6 +235,13 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                         {{ ticket.created_at | timeAgo }}
+                      </td>
+                      <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        @if (ticket.resolved_at && (ticket.status === 'resolved' || ticket.status === 'closed')) {
+                          <span class="text-green-600 font-medium">{{ ticket.resolved_at | timeAgo }}</span>
+                        } @else {
+                          <span class="text-gray-400">—</span>
+                        }
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <a [routerLink]="['/tickets', ticket.id]"
