@@ -6,6 +6,7 @@ import { TicketService } from '../../../../core/services/ticket.service';
 import { TicketCategoryService } from '../../../../core/services/ticket-category.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { UserService } from '../../../../core/services/user.service';
+import { TranslationService } from '../../../../core/services/translation.service';
 import { Ticket, TicketResponse, User, TicketCategory } from '../../../../core/models/ticket.model';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
@@ -39,7 +40,7 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
-            Back to Tickets
+            {{ translationService.instant('ticket.backToTickets') }}
           </a>
         </div>
 
@@ -68,10 +69,10 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                 <p class="text-gray-600 mb-2">{{ ticket.description }}</p>
                 <div class="flex items-center gap-2 text-sm text-gray-500">
                   <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span>Created by <strong>{{ ticket.user?.name || 'Unknown' }}</strong></span>
+                  <span>Created by <strong>{{ ticket.user.name || 'Unknown' }}</strong></span>
                 </div>
               </div>
 
@@ -80,7 +81,7 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                 <div class="flex-shrink-0 ml-4">
                   <div class="flex flex-col gap-2">
                     <!-- Status Change Dropdown -->
-                    <select 
+                    <select
                       [value]="ticket.status"
                       (change)="changeTicketStatus($event)"
                       [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
@@ -94,7 +95,7 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                     </select>
 
                     <!-- Priority Change Dropdown -->
-                    <select 
+                    <select
                       [value]="ticket.priority"
                       (change)="changeTicketPriority($event)"
                       [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
@@ -118,7 +119,7 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
               <div>
                 <p class="text-sm text-gray-500 mb-1">Category</p>
                 @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
-                  <select 
+                  <select
                     [(ngModel)]="selectedCategoryId"
                     (ngModelChange)="onCategoryChange($event)"
                     class="text-sm px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent">
@@ -142,7 +143,7 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                     {{ getAssignedToName() }}
                   </p>
                   @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
-                    <button 
+                    <button
                       (click)="openAssignModal()"
                       class="text-xs text-primary-600 hover:text-primary-700 underline"
                       title="Assign or reassign ticket">
@@ -161,15 +162,15 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                   @for (assignment of ticket.assignments; track assignment.id) {
                     <div class="text-sm text-gray-600 flex items-center gap-2">
                       <svg class="w-4 h-4 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
                       <span>
-                        Assigned to 
+                        Assigned to
                         <strong>
                           {{ getAssignmentUserName(assignment, 'to') }}
-                        </strong> 
-                        by 
+                        </strong>
+                        by
                         <strong>
                           {{ getAssignmentUserName(assignment, 'by') }}
                         </strong>
@@ -196,27 +197,27 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
             <!-- Ticket Actions -->
             <div class="pt-4 border-t border-gray-200 mt-4 flex gap-3">
               @if (canReopenTicket()) {
-                <button 
+                <button
                   (click)="reopenTicket()"
                   [disabled]="isReopening"
                   class="btn-secondary">
                   <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                   </svg>
-                  {{ isReopening ? 'Reopening...' : 'Reopen Ticket' }}
+                  {{ isReopening ? translationService.instant('ticket.reopening') : translationService.instant('ticket.reopenTicket') }}
                 </button>
               }
               @if (canDeleteTicket()) {
-                <button 
+                <button
                   (click)="deleteTicket()"
                   [disabled]="isDeleting"
                   class="btn-danger">
                   <svg class="w-4 h-4 mr-1 inline" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                   </svg>
-                  {{ isDeleting ? 'Deleting...' : 'Delete Ticket' }}
+                  {{ isDeleting ? translationService.instant('ticket.deleting') : translationService.instant('ticket.deleteTicket') }}
                 </button>
               }
             </div>
@@ -226,19 +227,19 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
           <div class="card">
             <div class="flex items-center justify-between">
               <div>
-                <h2 class="text-xl font-heading font-semibold text-gray-900 mb-1">Responses</h2>
+                <h2 class="text-xl font-heading font-semibold text-gray-900 mb-1">{{ translationService.instant('response.responses') }}</h2>
                 <p class="text-sm text-gray-600">
-                  {{ ticket.responses?.length || 0 }} {{ (ticket.responses?.length || 0) === 1 ? 'response' : 'responses' }}
+                  {{ ticket.responses?.length || 0 }} {{ (ticket.responses?.length || 0) === 1 ? translationService.instant('response.response') : translationService.instant('response.responses') }}
                 </p>
               </div>
-              <button 
+              <button
                 (click)="openResponsesModal()"
                 class="btn-primary flex items-center gap-2">
                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                         d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
                 </svg>
-                View & Add Responses
+                {{ translationService.instant('response.viewAndAddResponses') }}
               </button>
             </div>
           </div>
@@ -255,13 +256,13 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
           <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50" (click)="closeAssignModal()">
             <div class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md" (click)="$event.stopPropagation()">
               <h3 class="text-lg font-semibold text-gray-900 mb-4">Assign Ticket</h3>
-              
+
               <form [formGroup]="assignForm" (ngSubmit)="assignTicket()">
                 <div class="mb-4">
                   <label class="block text-sm font-medium text-gray-700 mb-2">
                     Assign to User
                   </label>
-                  <select 
+                  <select
                     formControlName="assigned_to"
                     class="input-field"
                     [class.border-danger-500]="assignForm.get('assigned_to')?.invalid && assignForm.get('assigned_to')?.touched">
@@ -276,13 +277,13 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                 </div>
 
                 <div class="flex gap-3 justify-end">
-                  <button 
+                  <button
                     type="button"
                     (click)="closeAssignModal()"
                     class="btn-secondary">
                     Cancel
                   </button>
-                  <button 
+                  <button
                     type="submit"
                     class="btn-primary"
                     [disabled]="assignForm.invalid || isAssigning">
@@ -314,6 +315,7 @@ export class TicketDetailPageComponent implements OnInit {
   private ticketCategoryService = inject(TicketCategoryService);
   private userService = inject(UserService);
   authService = inject(AuthService);
+  translationService = inject(TranslationService);
 
   ticket: Ticket | null = null;
   availableUsers: User[] = [];
@@ -345,7 +347,7 @@ export class TicketDetailPageComponent implements OnInit {
       }
     }
   }
-  
+
   loadTicketCategories(): void {
     // Load all categories (active and inactive) so we can show existing selections
     this.ticketCategoryService.getTicketCategories(false).subscribe({
@@ -364,7 +366,7 @@ export class TicketDetailPageComponent implements OnInit {
       }
     });
   }
-  
+
   loadUsers(): void {
     this.isLoadingUsers = true;
     console.log('🔄 [TICKET DETAIL] Loading admins and superusers for assignment');
@@ -379,17 +381,17 @@ export class TicketDetailPageComponent implements OnInit {
         this.availableUsers = allUsers.filter((user: any) => {
           const profile = user.my_profile || user.profile;
           if (!profile) return false;
-          
+
           const profileName = profile.name?.toLowerCase();
           // Accept Admin, SuperUser, or Administrador
-          return profileName === 'administrador' || 
-                 profileName === 'admin' || 
+          return profileName === 'administrador' ||
+                 profileName === 'admin' ||
                  profileName === 'superuser';
         });
-        
+
         this.isLoadingUsers = false;
         console.log('✅ [TICKET DETAIL] Admins/SuperUsers loaded:', this.availableUsers.length, 'of', allUsers.length, 'total');
-        
+
         if (this.availableUsers.length === 0) {
           console.warn('⚠️ [TICKET DETAIL] No admin/superuser users found for assignment');
         }
@@ -408,19 +410,19 @@ export class TicketDetailPageComponent implements OnInit {
     this.ticketService.getTicket(id).subscribe({
       next: (response) => {
         this.ticket = response.data;
-        
+
         // Set selected category ID for dropdown
         const category = this.ticket.ticketCategory || this.ticket.ticket_category;
         this.selectedCategoryId = category ? category.id : '';
         console.log('🔍 [TICKET DETAIL] Set selectedCategoryId to:', this.selectedCategoryId);
-        
+
         this.isLoading = false;
         console.log('✅ [TICKET DETAIL] Ticket loaded successfully');
         console.log('   Ticket ID:', this.ticket.id);
         console.log('   Title:', this.ticket.title);
         console.log('   Assigned To:', this.ticket.assigned_to);
         console.log('   AssignedTo Object:', this.ticket.assignedTo);
-        
+
         if (this.ticket.assignments && this.ticket.assignments.length > 0) {
           console.log('   Assignment History Count:', this.ticket.assignments.length);
           this.ticket.assignments.forEach((assignment, index) => {
@@ -546,7 +548,7 @@ export class TicketDetailPageComponent implements OnInit {
     }
 
     const newStatus = (event.target as HTMLSelectElement).value;
-    
+
     // Don't do anything if status hasn't changed
     if (newStatus === this.ticket.status) return;
 
@@ -581,7 +583,7 @@ export class TicketDetailPageComponent implements OnInit {
     }
 
     const newPriority = (event.target as HTMLSelectElement).value;
-    
+
     // Don't do anything if priority hasn't changed
     if (newPriority === this.ticket.priority) return;
 
@@ -620,8 +622,8 @@ export class TicketDetailPageComponent implements OnInit {
 
     console.log('🔄 [TICKET DETAIL] Changing category to', newCategoryId);
 
-    this.ticketService.updateTicket(this.ticket.id, { 
-      ticket_category_id: newCategoryId ? +newCategoryId : null 
+    this.ticketService.updateTicket(this.ticket.id, {
+      ticket_category_id: newCategoryId ? +newCategoryId : null
     }).subscribe({
       next: (response) => {
         console.log('✅ [TICKET DETAIL] Category changed successfully:', response);
@@ -643,8 +645,8 @@ export class TicketDetailPageComponent implements OnInit {
     this.showAssignModal = true;
     // Pre-select current assigned user if exists
     if (this.ticket?.assigned_to) {
-      const assignedId = typeof this.ticket.assigned_to === 'number' 
-        ? this.ticket.assigned_to 
+      const assignedId = typeof this.ticket.assigned_to === 'number'
+        ? this.ticket.assigned_to
         : this.ticket.assigned_to.id;
       this.assignForm.patchValue({ assigned_to: assignedId });
     }
@@ -694,21 +696,21 @@ export class TicketDetailPageComponent implements OnInit {
    */
   getUserNameById(userId: number): string | null {
     if (!userId) return null;
-    
+
     // Check in available users list (loaded for assignment)
     const user = this.availableUsers.find(u => u.id === userId);
     if (user) return user.name;
-    
+
     // Check if it's the current ticket owner
     if (this.ticket?.user && this.ticket.user.id === userId) {
       return this.ticket.user.name;
     }
-    
+
     // Check if it's the assigned user
     if (this.ticket?.assignedTo && this.ticket.assignedTo.id === userId) {
       return this.ticket.assignedTo.name;
     }
-    
+
     return null;
   }
 
@@ -717,30 +719,30 @@ export class TicketDetailPageComponent implements OnInit {
    */
   private extractUserName(userObj: any): string | null {
     if (!userObj) return null;
-    
+
     // If it's already a string, return it
     if (typeof userObj === 'string') return userObj;
-    
+
     // If it's an object, try various name properties
     if (typeof userObj === 'object') {
       // Try direct name property
       if (typeof userObj.name === 'string') return userObj.name;
-      
+
       // Try nested name (in case of double nesting)
       if (userObj.name && typeof userObj.name === 'object' && userObj.name.name) {
         return String(userObj.name.name);
       }
-      
+
       // Try full_name
       if (typeof userObj.full_name === 'string') return userObj.full_name;
-      
+
       // Try username
       if (typeof userObj.username === 'string') return userObj.username;
-      
+
       // Try email as last resort
       if (typeof userObj.email === 'string') return userObj.email;
     }
-    
+
     return null;
   }
 
@@ -751,7 +753,7 @@ export class TicketDetailPageComponent implements OnInit {
   getAssignmentUserName(assignment: any, type: 'to' | 'by'): string {
     // The API returns assigned_to and assigned_by as objects with user data
     const userObject = type === 'to' ? assignment.assigned_to : assignment.assigned_by;
-    
+
     console.log(`🔍 [ASSIGNMENT] Getting ${type} user name for assignment #${assignment.id}:`, {
       userObject,
       userObjectType: typeof userObject,
@@ -759,7 +761,7 @@ export class TicketDetailPageComponent implements OnInit {
       hasName: !!userObject?.name,
       fullAssignment: assignment
     });
-    
+
     // Extract name from the user object
     if (userObject && typeof userObject === 'object') {
       const extractedName = this.extractUserName(userObject);
@@ -768,7 +770,7 @@ export class TicketDetailPageComponent implements OnInit {
         return extractedName;
       }
     }
-    
+
     // Fallback if userObject has an id, try to find in available users
     const userId = userObject?.id;
     if (userId) {
@@ -780,12 +782,12 @@ export class TicketDetailPageComponent implements OnInit {
           return userName;
         }
       }
-      
+
       // Fallback to user ID
       console.warn(`⚠️ [ASSIGNMENT] Could not resolve ${type} user name, using ID:`, userId);
       return `User #${userId}`;
     }
-    
+
     // Ultimate fallback
     console.error(`❌ [ASSIGNMENT] No user information available for ${type}`);
     return 'Unknown User';
@@ -796,7 +798,7 @@ export class TicketDetailPageComponent implements OnInit {
    */
   getAssignedToName(): string {
     if (!this.ticket) return 'Unassigned';
-    
+
     // Check if assigned_to is an object with user data
     if (this.ticket.assigned_to && typeof this.ticket.assigned_to === 'object') {
       const extractedName = this.extractUserName(this.ticket.assigned_to);
@@ -804,7 +806,7 @@ export class TicketDetailPageComponent implements OnInit {
         return extractedName;
       }
     }
-    
+
     // Try assignedTo object (camelCase version)
     if (this.ticket.assignedTo) {
       const extractedName = this.extractUserName(this.ticket.assignedTo);
@@ -812,14 +814,14 @@ export class TicketDetailPageComponent implements OnInit {
         return extractedName;
       }
     }
-    
+
     // If assigned_to is an ID, look it up
     if (this.ticket.assigned_to && typeof this.ticket.assigned_to === 'number') {
       const userName = this.getUserNameById(this.ticket.assigned_to);
       if (userName) return userName;
       return `User #${this.ticket.assigned_to}`;
     }
-    
+
     return 'Unassigned';
   }
 
@@ -834,14 +836,14 @@ export class TicketDetailPageComponent implements OnInit {
     }
     const categoryId = String(category.id);
     console.log('🔍 [CATEGORY] Category ID for dropdown:', categoryId, 'Category name:', category.name);
-    
+
     // Check if this ID exists in loaded categories
     const exists = this.ticketCategories.some(c => String(c.id) === categoryId);
     if (!exists) {
       console.warn('⚠️ [CATEGORY] Category ID', categoryId, 'not found in loaded categories!');
       console.log('Available categories:', this.ticketCategories.map(c => ({ id: c.id, name: c.name })));
     }
-    
+
     return categoryId;
   }
 }
