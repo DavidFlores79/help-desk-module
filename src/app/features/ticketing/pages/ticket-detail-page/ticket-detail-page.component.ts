@@ -34,10 +34,10 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
     <div class="min-h-screen bg-gray-50">
       <app-header></app-header>
 
-      <main class="max-w-5xl mx-auto px-4 py-8">
-        <div class="mb-6">
-          <a routerLink="/tickets" class="text-primary-600 hover:text-primary-700 flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <main class="max-w-5xl mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
+        <div class="mb-4 sm:mb-6">
+          <a routerLink="/tickets" class="text-primary-600 hover:text-primary-700 flex items-center gap-2 text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
             {{ translationService.instant('ticket.backToTickets') }}
@@ -52,100 +52,98 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
 
         @if (ticket && !isLoading) {
           <!-- Ticket Header -->
-          <div class="card mb-6">
-            <div class="flex items-start justify-between mb-4">
-              <div class="flex-1">
-                <div class="flex items-center gap-2 mb-2">
-                  <span class="text-sm text-gray-500">#{{ ticket.id }}</span>
-                  <span [class]="ticket.status | statusBadge">{{ ticket.status_label }}</span>
-                  <span [class]="ticket.priority | priorityBadge">{{ ticket.priority_label }}</span>
+          <div class="card mb-4 sm:mb-6">
+            <div class="flex flex-col lg:flex-row lg:items-start lg:justify-between gap-4 mb-4">
+              <div class="flex-1 min-w-0">
+                <div class="flex flex-wrap items-center gap-2 mb-2">
+                  <span class="text-xs sm:text-sm text-gray-500">#{{ ticket.id }}</span>
+                  <span [class]="ticket.status | statusBadge" class="text-xs">{{ ticket.status_label }}</span>
+                  <span [class]="ticket.priority | priorityBadge" class="text-xs">{{ ticket.priority_label }}</span>
                   @if (ticket.ticketCategory || ticket.ticket_category) {
                     <span class="px-2 py-1 text-xs font-medium rounded-full bg-blue-100 text-blue-800">
                       {{ (ticket.ticketCategory || ticket.ticket_category)?.name }}
                     </span>
                   }
                 </div>
-                <h1 class="text-2xl font-heading font-bold text-gray-900 mb-2">{{ ticket.title }}</h1>
-                <p class="text-gray-600 mb-2">{{ ticket.description }}</p>
-                <div class="flex items-center gap-2 text-sm text-gray-500">
-                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-2 break-words">{{ ticket.title }}</h1>
+                <p class="text-sm sm:text-base text-gray-600 mb-2 break-words">{{ ticket.description }}</p>
+                <div class="flex items-center gap-2 text-xs sm:text-sm text-gray-500">
+                  <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                           d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                   </svg>
-                  <span>Created by <strong>{{ ticket.user.name || 'Unknown' }}</strong></span>
+                  <span class="truncate">Created by <strong>{{ ticket.user.name || 'Unknown' }}</strong></span>
                 </div>
               </div>
 
               <!-- Admin Quick Actions -->
               @if (authService.isAdmin()) {
-                <div class="flex-shrink-0 ml-4">
-                  <div class="flex flex-col gap-2">
-                    <!-- Status Change Dropdown -->
-                    <select
-                      [value]="ticket.status"
-                      (change)="changeTicketStatus($event)"
-                      [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
-                      class="text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
-                      <option value="open">🔓 Open</option>
-                      <option value="assigned">👤 Assigned</option>
-                      <option value="in_progress">⏳ In Progress</option>
-                      <option value="awaiting_user">⏸️ Awaiting User</option>
-                      <option value="resolved">✅ Resolved</option>
-                      <option value="closed">🔒 Closed</option>
-                    </select>
+                <div class="flex flex-col sm:flex-row lg:flex-col gap-2 w-full sm:w-auto lg:w-48">
+                  <!-- Status Change Dropdown -->
+                  <select
+                    [value]="ticket.status"
+                    (change)="changeTicketStatus($event)"
+                    [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
+                    class="text-xs sm:text-sm px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
+                    <option value="open">🔓 Open</option>
+                    <option value="assigned">👤 Assigned</option>
+                    <option value="in_progress">⏳ In Progress</option>
+                    <option value="awaiting_user">⏸️ Awaiting User</option>
+                    <option value="resolved">✅ Resolved</option>
+                    <option value="closed">🔒 Closed</option>
+                  </select>
 
-                    <!-- Priority Change Dropdown -->
-                    <select
-                      [value]="ticket.priority"
-                      (change)="changeTicketPriority($event)"
-                      [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
-                      class="text-sm px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
-                      <option value="low">Low</option>
-                      <option value="medium">Medium</option>
-                      <option value="high">High</option>
-                      <option value="urgent">Urgent</option>
-                    </select>
-                  </div>
+                  <!-- Priority Change Dropdown -->
+                  <select
+                    [value]="ticket.priority"
+                    (change)="changeTicketPriority($event)"
+                    [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
+                    class="text-xs sm:text-sm px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
+                    <option value="low">Low</option>
+                    <option value="medium">Medium</option>
+                    <option value="high">High</option>
+                    <option value="urgent">Urgent</option>
+                  </select>
                 </div>
               }
             </div>
 
             <!-- Metadata -->
-            <div class="grid grid-cols-2 md:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+            <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
               <div>
-                <p class="text-sm text-gray-500">Created</p>
-                <p class="text-sm font-medium">{{ ticket.created_at | timeAgo }}</p>
+                <p class="text-xs sm:text-sm text-gray-500">Created</p>
+                <p class="text-xs sm:text-sm font-medium">{{ ticket.created_at | timeAgo }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-500 mb-1">Category</p>
+                <p class="text-xs sm:text-sm text-gray-500 mb-1">Category</p>
                 @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
                   <select
                     [(ngModel)]="selectedCategoryId"
                     (ngModelChange)="onCategoryChange($event)"
-                    class="text-sm px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                    class="text-xs sm:text-sm px-2 py-1 border border-gray-300 rounded focus:ring-2 focus:ring-primary-500 focus:border-transparent w-full">
                     <option value="">Select category...</option>
                     @for (cat of ticketCategories; track cat.id) {
                       <option [value]="cat.id">{{ cat.name }}</option>
                     }
                   </select>
                 } @else {
-                  <p class="text-sm font-medium">{{ (ticket.ticketCategory || ticket.ticket_category)?.name || 'N/A' }}</p>
+                  <p class="text-xs sm:text-sm font-medium truncate">{{ (ticket.ticketCategory || ticket.ticket_category)?.name || 'N/A' }}</p>
                 }
               </div>
               <div>
-                <p class="text-sm text-gray-500">Related Assignment</p>
-                <p class="text-sm font-medium">{{ ticket.assignment?.id ? ('#' + ticket.assignment?.id) : 'N/A' }}</p>
+                <p class="text-xs sm:text-sm text-gray-500">Related Assignment</p>
+                <p class="text-xs sm:text-sm font-medium">{{ ticket.assignment?.id ? ('#' + ticket.assignment?.id) : 'N/A' }}</p>
               </div>
               <div>
-                <p class="text-sm text-gray-500">Assigned To</p>
+                <p class="text-xs sm:text-sm text-gray-500">Assigned To</p>
                 <div class="flex items-center gap-2">
-                  <p class="text-sm font-medium">
+                  <p class="text-xs sm:text-sm font-medium truncate flex-1">
                     {{ getAssignedToName() }}
                   </p>
                   @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
                     <button
                       (click)="openAssignModal()"
-                      class="text-xs text-primary-600 hover:text-primary-700 underline"
+                      class="text-xs text-primary-600 hover:text-primary-700 underline whitespace-nowrap"
                       title="Assign or reassign ticket">
                       {{ ticket.assignedTo || ticket.assigned_to ? 'Change' : 'Assign' }}
                     </button>
