@@ -5,37 +5,40 @@ This directory contains all project documentation organized for easy access.
 ## 📁 Structure
 
 ### `/guides` - Development Guides
-Active documentation for developers working on the project:
-- **TESTING_GUIDE.md** - How to test the application
-- **DEBUGGING_GUIDE.md** - Debugging tips and common issues
+Comprehensive guides for developers working on the project:
 - **QUICK_START.md** - Quick start guide for new developers
+- **API_DOCUMENTATION.md** - Complete API documentation and request examples
+- **TESTING_GUIDE.md** - How to test the application
 - **QUICK_TEST_GUIDE.md** - Quick testing procedures
+- **DEBUGGING_GUIDE.md** - Debugging tips and common issues
 - **IMPLEMENTATION_GUIDE.md** - Implementation details and patterns
-- **GIT_WORKFLOW.md** - Git workflow and branching strategy
 - **I18N_IMPLEMENTATION.md** - Internationalization setup and usage
+- **GIT_WORKFLOW.md** - Git workflow and branching strategy
 
-### `/archive` - Historical Documentation
-Historical records of fixes, features, and development progress:
-- Feature implementation records
-- Bug fix documentation
-- Status reports and summaries
-- Pull request descriptions
-- Test scripts and API tests
+### `/features` - Feature Documentation
+Documentation for specific application features:
+- **RESPONSIVE_DESIGN.md** - Complete responsive design implementation guide
+- **ATTACHMENT_MANAGEMENT_FEATURE.md** - File attachment handling feature
 
 ## 📖 Main Documentation
 
-See the root-level files for primary documentation:
-- **README.md** - Main project documentation
-- **TICKETING_API_REQUESTS.md** - API documentation and request examples
+See the root-level `README.md` for the main project documentation.
 
-## 🔍 Finding Documentation
+## 🔍 Quick Navigation
 
-**Need to know how to...**
-- Start developing? → `/guides/QUICK_START.md`
-- Test the application? → `/guides/TESTING_GUIDE.md`
-- Debug issues? → `/guides/DEBUGGING_GUIDE.md`
-- Use i18n features? → `/guides/I18N_IMPLEMENTATION.md`
-- Understand the API? → `../TICKETING_API_REQUESTS.md`
+**Getting Started:**
+- New to the project? → `/guides/QUICK_START.md`
+- Need to test? → `/guides/QUICK_TEST_GUIDE.md`
 
-**Looking for historical info?**
-- Check `/archive` for past fixes and features
+**Development:**
+- API endpoints? → `/guides/API_DOCUMENTATION.md`
+- Implementation patterns? → `/guides/IMPLEMENTATION_GUIDE.md`
+- Debugging issues? → `/guides/DEBUGGING_GUIDE.md`
+
+**Features:**
+- Responsive design? → `/features/RESPONSIVE_DESIGN.md`
+- File attachments? → `/features/ATTACHMENT_MANAGEMENT_FEATURE.md`
+- Internationalization? → `/guides/I18N_IMPLEMENTATION.md`
+
+**Git & Workflow:**
+- Branching strategy? → `/guides/GIT_WORKFLOW.md`

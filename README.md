@@ -491,18 +491,22 @@ For support, contact the development team or create an issue in the repository.
 
 ## 📚 Additional Documentation
 
-More detailed guides and documentation can be found in the `/docs` directory:
-- **Development Guides**: `/docs/guides/` - Testing, debugging, implementation guides
-- **API Documentation**: `TICKETING_API_REQUESTS.md` - Complete API reference
-- **Historical Records**: `/docs/archive/` - Past fixes and feature implementations
+Comprehensive documentation is organized in the `/docs` directory:
 
-### 📱 Responsive Design Documentation
-- **[RESPONSIVE_DESIGN.md](RESPONSIVE_DESIGN.md)** - Comprehensive responsive design guide
-- **[RESPONSIVE_CHANGES_SUMMARY.md](RESPONSIVE_CHANGES_SUMMARY.md)** - Summary of responsive improvements
-- **[RESPONSIVE_VISUAL_GUIDE.md](RESPONSIVE_VISUAL_GUIDE.md)** - Visual layout representations
-- **[RESPONSIVE_QUICK_REFERENCE.md](RESPONSIVE_QUICK_REFERENCE.md)** - Developer quick reference
+### 📖 Development Guides (`/docs/guides/`)
+- **[Quick Start Guide](docs/guides/QUICK_START.md)** - Get up and running quickly
+- **[API Documentation](docs/guides/API_DOCUMENTATION.md)** - Complete API reference and examples
+- **[Testing Guide](docs/guides/TESTING_GUIDE.md)** - How to test the application
+- **[Debugging Guide](docs/guides/DEBUGGING_GUIDE.md)** - Common issues and solutions
+- **[Implementation Guide](docs/guides/IMPLEMENTATION_GUIDE.md)** - Architecture and patterns
+- **[i18n Guide](docs/guides/I18N_IMPLEMENTATION.md)** - Internationalization setup
+- **[Git Workflow](docs/guides/GIT_WORKFLOW.md)** - Branching and collaboration
 
-See `/docs/README.md` for a complete documentation index.
+### 🎨 Feature Documentation (`/docs/features/`)
+- **[Responsive Design](docs/features/RESPONSIVE_DESIGN.md)** - Mobile-first responsive implementation
+- **[Attachment Management](docs/features/ATTACHMENT_MANAGEMENT_FEATURE.md)** - File upload feature
+
+See **[/docs/README.md](docs/README.md)** for the complete documentation index.
 
 ---
 
