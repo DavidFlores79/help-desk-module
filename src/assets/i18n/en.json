@@ -86,6 +86,7 @@
     "createdBy": "Created by",
     "createdAt": "Created at",
     "updatedAt": "Updated at",
+    "resolvedAt": "Resolved at",
     "dueDate": "Due date",
     "responses": "Responses",
     "attachments": "Attachments",

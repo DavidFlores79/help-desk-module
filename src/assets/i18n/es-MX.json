@@ -86,6 +86,7 @@
     "createdBy": "Creado por",
     "createdAt": "Creado el",
     "updatedAt": "Actualizado el",
+    "resolvedAt": "Resuelto el",
     "dueDate": "Fecha de vencimiento",
     "responses": "Respuestas",
     "attachments": "Archivos adjuntos",

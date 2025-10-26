@@ -134,7 +134,12 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                       </span>
                     }
                   </div>
-                  <span class="whitespace-nowrap">{{ ticket.created_at | timeAgo }}</span>
+                  <div class="flex flex-col items-end gap-1">
+                    <span class="whitespace-nowrap">{{ ticket.created_at | timeAgo }}</span>
+                    @if (ticket.resolved_at && (ticket.status === 'resolved' || ticket.status === 'closed')) {
+                      <span class="whitespace-nowrap text-green-600 font-medium text-xs">✓ {{ ticket.resolved_at | timeAgo }}</span>
+                    }
+                  </div>
                 </div>
               </div>
             }
