@@ -23,10 +23,10 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
     <div class="min-h-screen bg-gray-50">
       <app-header></app-header>
 
-      <main class="max-w-3xl mx-auto px-4 py-8">
-        <div class="mb-6">
-          <a routerLink="/tickets" class="text-primary-600 hover:text-primary-700 flex items-center gap-2">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+      <main class="max-w-3xl mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
+        <div class="mb-4 sm:mb-6">
+          <a routerLink="/tickets" class="text-primary-600 hover:text-primary-700 flex items-center gap-2 text-sm sm:text-base">
+            <svg class="w-4 h-4 sm:w-5 sm:h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
             </svg>
             {{ 'ticket.backToTickets' | translate }}
@@ -34,7 +34,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
         </div>
 
         <div class="card">
-          <h1 class="text-2xl font-heading font-bold text-gray-900 mb-6">{{ 'ticket.createNewTicket' | translate }}</h1>
+          <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-4 sm:mb-6">{{ 'ticket.createNewTicket' | translate }}</h1>
 
           <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
             <!-- Title -->
@@ -64,7 +64,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 id="description"
                 formControlName="description"
                 rows="5"
-                class="input-field"
+                class="input-field resize-y"
                 [class.border-danger-500]="ticketForm.get('description')?.invalid && ticketForm.get('description')?.touched"
                 [placeholder]="'ticket.detailedInfo' | translate"
               ></textarea>
@@ -73,37 +73,40 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
               }
             </div>
 
-            <!-- Priority -->
-            <div class="mb-4">
-              <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
-                {{ 'ticket.priority' | translate }} <span class="text-danger-600">*</span>
-              </label>
-              <select id="priority" formControlName="priority" class="input-field">
-                <option value="">{{ 'ticket.selectPriority' | translate }}</option>
-                <option value="low">{{ 'priority.low' | translate }}</option>
-                <option value="medium">{{ 'priority.medium' | translate }}</option>
-                <option value="high">{{ 'priority.high' | translate }}</option>
-                <option value="urgent">{{ 'priority.urgent' | translate }}</option>
-              </select>
-              @if (ticketForm.get('priority')?.invalid && ticketForm.get('priority')?.touched) {
-                <p class="mt-1 text-sm text-danger-600">{{ 'ticket.priorityRequired' | translate }}</p>
-              }
-            </div>
-
-            <!-- Category -->
-            <div class="mb-4">
-              <label for="ticket_category_id" class="block text-sm font-medium text-gray-700 mb-2">
-                {{ 'ticket.category' | translate }}
-              </label>
-              <select 
-                id="ticket_category_id" 
-                formControlName="ticket_category_id" 
-                class="input-field">
-                <option value="">{{ 'ticket.selectCategory' | translate }}</option>
-                @for (category of ticketCategories; track category.id) {
-                  <option [value]="category.id">{{ category.name }}</option>
+            <!-- Priority and Category Grid on larger screens -->
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+              <!-- Priority -->
+              <div>
+                <label for="priority" class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ 'ticket.priority' | translate }} <span class="text-danger-600">*</span>
+                </label>
+                <select id="priority" formControlName="priority" class="input-field">
+                  <option value="">{{ 'ticket.selectPriority' | translate }}</option>
+                  <option value="low">{{ 'priority.low' | translate }}</option>
+                  <option value="medium">{{ 'priority.medium' | translate }}</option>
+                  <option value="high">{{ 'priority.high' | translate }}</option>
+                  <option value="urgent">{{ 'priority.urgent' | translate }}</option>
+                </select>
+                @if (ticketForm.get('priority')?.invalid && ticketForm.get('priority')?.touched) {
+                  <p class="mt-1 text-sm text-danger-600">{{ 'ticket.priorityRequired' | translate }}</p>
                 }
-              </select>
+              </div>
+
+              <!-- Category -->
+              <div>
+                <label for="ticket_category_id" class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ 'ticket.category' | translate }}
+                </label>
+                <select 
+                  id="ticket_category_id" 
+                  formControlName="ticket_category_id" 
+                  class="input-field">
+                  <option value="">{{ 'ticket.selectCategory' | translate }}</option>
+                  @for (category of ticketCategories; track category.id) {
+                    <option [value]="category.id">{{ category.name }}</option>
+                  }
+                </select>
+              </div>
             </div>
 
             <!-- File Upload -->
@@ -124,24 +127,24 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
             <!-- Error Message -->
             @if (errorMessage) {
-              <div class="mb-4 p-4 bg-danger-50 border border-danger-200 rounded-lg">
+              <div class="mb-4 p-3 sm:p-4 bg-danger-50 border border-danger-200 rounded-lg">
                 <p class="text-sm text-danger-700">{{ errorMessage }}</p>
               </div>
             }
 
             <!-- Actions -->
-            <div class="flex items-center justify-end gap-4 relative z-50">
+            <div class="flex flex-col-reverse sm:flex-row items-stretch sm:items-center justify-end gap-3 sm:gap-4 relative z-50">
               <button 
                 type="button" 
                 (click)="cancel()"
-                class="btn-secondary relative z-50 pointer-events-auto"
+                class="btn-secondary relative z-50 pointer-events-auto w-full sm:w-auto"
                 style="pointer-events: auto !important; position: relative; z-index: 9999;"
                 [disabled]="isSubmitting">
                 {{ 'app.cancel' | translate }}
               </button>
               <button 
                 type="submit" 
-                class="btn-primary relative z-50 pointer-events-auto"
+                class="btn-primary relative z-50 pointer-events-auto w-full sm:w-auto"
                 style="pointer-events: auto !important; position: relative; z-index: 9999;"
                 [disabled]="ticketForm.invalid || isSubmitting">
                 {{ isSubmitting ? ('ticket.creating' | translate) : ('ticket.createTicket' | translate) }}

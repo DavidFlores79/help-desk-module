@@ -30,22 +30,22 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
     <div class="min-h-screen bg-gray-50">
       <app-header></app-header>
 
-      <main class="max-w-7xl mx-auto px-4 py-8">
+      <main class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
         <!-- Page Header -->
-        <div class="mb-6">
-          <h2 class="text-3xl font-heading font-bold text-gray-900">{{ 'admin.dashboard' | translate }}</h2>
-          <p class="text-gray-600 mt-1">{{ 'admin.manageAllTickets' | translate }}</p>
+        <div class="mb-4 sm:mb-6">
+          <h2 class="text-2xl sm:text-3xl font-heading font-bold text-gray-900">{{ 'admin.dashboard' | translate }}</h2>
+          <p class="text-sm sm:text-base text-gray-600 mt-1">{{ 'admin.manageAllTickets' | translate }}</p>
         </div>
 
         <!-- Stats Cards -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+        <div class="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-4 sm:mb-6">
           <div class="card bg-blue-50 border-blue-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-blue-600 font-medium">{{ 'admin.totalTickets' | translate }}</p>
-                <p class="text-2xl font-bold text-blue-900">{{ stats.total }}</p>
+                <p class="text-xs sm:text-sm text-blue-600 font-medium">{{ 'admin.totalTickets' | translate }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-blue-900">{{ stats.total }}</p>
               </div>
-              <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-8 h-8 sm:w-10 sm:h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
@@ -55,10 +55,10 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           <div class="card bg-yellow-50 border-yellow-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-yellow-600 font-medium">{{ 'admin.open' | translate }}</p>
-                <p class="text-2xl font-bold text-yellow-900">{{ stats.open }}</p>
+                <p class="text-xs sm:text-sm text-yellow-600 font-medium">{{ 'admin.open' | translate }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-yellow-900">{{ stats.open }}</p>
               </div>
-              <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-8 h-8 sm:w-10 sm:h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -68,10 +68,10 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           <div class="card bg-purple-50 border-purple-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-purple-600 font-medium">{{ 'admin.inProgress' | translate }}</p>
-                <p class="text-2xl font-bold text-purple-900">{{ stats.inProgress }}</p>
+                <p class="text-xs sm:text-sm text-purple-600 font-medium">{{ 'admin.inProgress' | translate }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-purple-900">{{ stats.inProgress }}</p>
               </div>
-              <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-8 h-8 sm:w-10 sm:h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
@@ -81,10 +81,10 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           <div class="card bg-green-50 border-green-200">
             <div class="flex items-center justify-between">
               <div>
-                <p class="text-sm text-green-600 font-medium">{{ 'admin.resolved' | translate }}</p>
-                <p class="text-2xl font-bold text-green-900">{{ stats.resolved }}</p>
+                <p class="text-xs sm:text-sm text-green-600 font-medium">{{ 'admin.resolved' | translate }}</p>
+                <p class="text-xl sm:text-2xl font-bold text-green-900">{{ stats.resolved }}</p>
               </div>
-              <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <svg class="w-8 h-8 sm:w-10 sm:h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
@@ -93,11 +93,11 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
         </div>
 
         <!-- Filters -->
-        <div class="card mb-6">
-          <div class="flex flex-wrap gap-4">
+        <div class="card mb-4 sm:mb-6">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.status' | translate }}</label>
-              <select [(ngModel)]="filters.status" (change)="loadTickets()" class="input-field">
+              <select [(ngModel)]="filters.status" (change)="loadTickets()" class="input-field text-sm">
                 <option value="">{{ 'filter.allStatus' | translate }}</option>
                 <option value="open">{{ 'status.open' | translate }}</option>
                 <option value="assigned">{{ 'status.assigned' | translate }}</option>

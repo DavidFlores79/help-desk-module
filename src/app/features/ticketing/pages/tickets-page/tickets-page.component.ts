@@ -28,27 +28,27 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
     <div class="min-h-screen bg-gray-50">
       <app-header></app-header>
 
-      <main class="max-w-7xl mx-auto px-4 py-8">
+      <main class="max-w-7xl mx-auto px-4 sm:px-6 py-4 sm:py-6 lg:py-8">
         <!-- Page Header -->
-        <div class="flex items-center justify-between mb-6">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
           <div>
-            <h2 class="text-3xl font-heading font-bold text-gray-900">{{ 'ticket.myTickets' | translate }}</h2>
-            <p class="text-gray-600 mt-1">{{ 'ticket.manageTickets' | translate }}</p>
+            <h2 class="text-2xl sm:text-3xl font-heading font-bold text-gray-900">{{ 'ticket.myTickets' | translate }}</h2>
+            <p class="text-sm sm:text-base text-gray-600 mt-1">{{ 'ticket.manageTickets' | translate }}</p>
           </div>
-          <a routerLink="/tickets/new" class="btn-primary inline-flex items-center">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <a routerLink="/tickets/new" class="btn-primary inline-flex items-center justify-center whitespace-nowrap">
+            <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            {{ 'ticket.newTicket' | translate }}
+            <span class="hidden sm:inline">{{ 'ticket.newTicket' | translate }}</span>
           </a>
         </div>
 
         <!-- Filters -->
         <div class="card mb-6">
-          <div class="flex flex-wrap gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.status' | translate }}</label>
-              <select [(ngModel)]="filters.status" (change)="loadTickets()" class="input-field">
+              <select [(ngModel)]="filters.status" (change)="loadTickets()" class="input-field text-sm">
                 <option value="">{{ 'filter.allStatus' | translate }}</option>
                 <option value="open">{{ 'status.open' | translate }}</option>
                 <option value="assigned">{{ 'status.assigned' | translate }}</option>
@@ -61,7 +61,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.priority' | translate }}</label>
-              <select [(ngModel)]="filters.priority" (change)="loadTickets()" class="input-field">
+              <select [(ngModel)]="filters.priority" (change)="loadTickets()" class="input-field text-sm">
                 <option value="">{{ 'filter.allPriorities' | translate }}</option>
                 <option value="low">{{ 'priority.low' | translate }}</option>
                 <option value="medium">{{ 'priority.medium' | translate }}</option>
@@ -70,8 +70,8 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
               </select>
             </div>
 
-            <div class="flex items-end">
-              <button (click)="clearFilters()" class="btn-secondary">{{ 'filter.clearFilters' | translate }}</button>
+            <div class="flex items-end sm:col-span-2 lg:col-span-1">
+              <button (click)="clearFilters()" class="btn-secondary w-full sm:w-auto">{{ 'filter.clearFilters' | translate }}</button>
             </div>
           </div>
         </div>
@@ -85,56 +85,56 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
         <!-- Tickets Grid -->
         @if (!isLoading && tickets.length > 0) {
-          <div class="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+          <div class="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
             @for (ticket of tickets; track ticket.id) {
               <div class="card hover:shadow-monday-lg transition-shadow duration-200 cursor-pointer"
                    [routerLink]="['/tickets', ticket.id]">
                 <div class="flex items-start justify-between mb-3">
-                  <div class="flex-1">
-                    <h3 class="text-lg font-heading font-semibold text-gray-900 mb-1">
+                  <div class="flex-1 min-w-0">
+                    <h3 class="text-base sm:text-lg font-heading font-semibold text-gray-900 mb-1 truncate">
                       {{ ticket.title }}
                     </h3>
                     <p class="text-sm text-gray-600 line-clamp-2">
                       {{ ticket.description }}
                     </p>
                   </div>
-                  <span class="ml-4 text-xs text-gray-500">#{{ ticket.id }}</span>
+                  <span class="ml-2 text-xs text-gray-500 flex-shrink-0">#{{ ticket.id }}</span>
                 </div>
 
-                <div class="flex items-center gap-2 mb-3">
-                  <span [class]="ticket.status | statusBadge">
+                <div class="flex flex-wrap items-center gap-2 mb-3">
+                  <span [class]="ticket.status | statusBadge" class="text-xs">
                     {{ ticket.status_label }}
                   </span>
-                  <span [class]="ticket.priority | priorityBadge">
+                  <span [class]="ticket.priority | priorityBadge" class="text-xs">
                     {{ ticket.priority_label }}
                   </span>
                   @if (ticket.ticketCategory || ticket.ticket_category) {
-                    <span class="badge badge-gray">
+                    <span class="badge badge-gray text-xs">
                       {{ (ticket.ticketCategory || ticket.ticket_category)?.name }}
                     </span>
                   }
                 </div>
 
-                <div class="flex items-center justify-between text-sm text-gray-500">
-                  <div class="flex items-center gap-4">
-                    <span class="flex items-center gap-1">
-                      <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs sm:text-sm text-gray-500">
+                  <div class="flex items-center gap-3 flex-wrap">
+                    <span class="flex items-center gap-1 truncate">
+                      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                               d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                       </svg>
-                      {{ ticket.user.name || 'Unknown' }}
+                      <span class="truncate">{{ ticket.user.name || 'Unknown' }}</span>
                     </span>
                     @if (ticket.assignedTo) {
-                      <span class="flex items-center gap-1 text-primary-600">
-                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <span class="flex items-center gap-1 text-primary-600 truncate">
+                        <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
                         </svg>
-                        {{ ticket.assignedTo.name }}
+                        <span class="truncate">{{ ticket.assignedTo.name }}</span>
                       </span>
                     }
                   </div>
-                  <span>{{ ticket.created_at | timeAgo }}</span>
+                  <span class="whitespace-nowrap">{{ ticket.created_at | timeAgo }}</span>
                 </div>
               </div>
             }
