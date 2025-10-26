@@ -46,7 +46,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 <p class="text-2xl font-bold text-blue-900">{{ stats.total }}</p>
               </div>
               <svg class="w-10 h-10 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
               </svg>
             </div>
@@ -59,7 +59,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 <p class="text-2xl font-bold text-yellow-900">{{ stats.open }}</p>
               </div>
               <svg class="w-10 h-10 text-yellow-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -72,7 +72,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 <p class="text-2xl font-bold text-purple-900">{{ stats.inProgress }}</p>
               </div>
               <svg class="w-10 h-10 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M13 10V3L4 14h7v7l9-11h-7z" />
               </svg>
             </div>
@@ -85,7 +85,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                 <p class="text-2xl font-bold text-green-900">{{ stats.resolved }}</p>
               </div>
               <svg class="w-10 h-10 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                       d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
               </svg>
             </div>
@@ -184,12 +184,12 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                         <div class="flex items-start">
                           <div>
                             <p class="text-sm font-medium text-gray-900">{{ ticket.title }}</p>
-                            <p class="text-sm text-gray-500">#{{ ticket.id }} - {{ ticket.user?.name || ticket.createdBy?.name || 'Unknown' }}</p>
+                            <p class="text-sm text-gray-500">#{{ ticket.id }} - {{ ticket.user.name || ticket.createdBy?.name || 'Unknown' }}</p>
                           </div>
                         </div>
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
-                        <select 
+                        <select
                           (change)="onCategoryChangeEvent(ticket, $event)"
                           class="text-xs px-2 py-1 border border-gray-300 rounded bg-white">
                           <option [value]="''" [selected]="!getSelectedCategoryId(ticket.id)">No category</option>
@@ -210,7 +210,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap">
                         @if (!ticket.assignedTo && !ticket.assigned_to) {
-                          <select 
+                          <select
                             (change)="assignTicket(ticket, $event)"
                             class="text-sm border-gray-300 rounded-md">
                             <option value="">Assign to...</option>
@@ -221,7 +221,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                         } @else {
                           <div class="flex items-center gap-2">
                             <span class="text-sm text-gray-900">{{ getAssignedUserName(ticket) }}</span>
-                            <button 
+                            <button
                               (click)="reassignTicket(ticket)"
                               class="text-xs text-primary-600 hover:text-primary-700"
                               title="Reassign">
@@ -234,12 +234,12 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                         {{ ticket.created_at | timeAgo }}
                       </td>
                       <td class="px-6 py-4 whitespace-nowrap text-sm">
-                        <a [routerLink]="['/tickets', ticket.id]" 
+                        <a [routerLink]="['/tickets', ticket.id]"
                            class="text-primary-600 hover:text-primary-700 mr-4">
                           View
                         </a>
                         @if (ticket.status !== 'closed' && ticket.status !== 'resolved') {
-                          <button 
+                          <button
                             (click)="updateStatus(ticket)"
                             class="text-gray-600 hover:text-gray-700">
                             Update
@@ -265,7 +265,7 @@ export class AdminPageComponent implements OnInit {
 
   // Make String available in template
   String = String;
-  
+
   tickets: Ticket[] = [];
   technicians: any[] = [];
   ticketCategories: TicketCategory[] = [];
@@ -289,7 +289,7 @@ export class AdminPageComponent implements OnInit {
     this.loadTicketCategories();
     this.loadTickets();
   }
-  
+
   loadTicketCategories(): void {
     // Load all categories (active and inactive) so we can show existing selections
     this.ticketCategoryService.getTicketCategories(false).subscribe({
@@ -309,7 +309,7 @@ export class AdminPageComponent implements OnInit {
       next: (response) => {
         // Filter to get only admins (profile_id=1) and superusers (profile_id=2)
         const allUsers = response.data?.data || [];
-        this.technicians = allUsers.filter(user => 
+        this.technicians = allUsers.filter(user =>
           user.profile_id === 1 || user.profile_id === 2
         );
         console.log('✅ [ADMIN] Technicians loaded:', this.technicians);
@@ -332,7 +332,7 @@ export class AdminPageComponent implements OnInit {
     this.ticketService.getTickets(filters).subscribe({
       next: (response) => {
         this.tickets = response.data.data || [];
-        
+
         // Initialize selected categories map
         this.selectedCategories.clear();
         this.tickets.forEach(ticket => {
@@ -341,9 +341,9 @@ export class AdminPageComponent implements OnInit {
           this.selectedCategories.set(ticket.id, categoryId);
           console.log('🔍 [ADMIN] Set category for ticket', ticket.id, ':', categoryId, 'Category:', category);
         });
-        
+
         console.log('🔍 [ADMIN] All selected categories:', Array.from(this.selectedCategories.entries()));
-        
+
         this.calculateStats();
         this.isLoading = false;
         console.log('✅ [ADMIN] Tickets loaded:', this.tickets.length);
@@ -391,19 +391,19 @@ export class AdminPageComponent implements OnInit {
     if (ticket.assignedTo && typeof ticket.assignedTo === 'object') {
       return ticket.assignedTo.name || 'Unknown';
     }
-    
+
     // If assigned_to is a number (ID), try to find the user in technicians list
     if (ticket.assigned_to && typeof ticket.assigned_to === 'number') {
       const tech = this.technicians.find(t => t.id === ticket.assigned_to);
       if (tech) return tech.name;
       return `User #${ticket.assigned_to}`;
     }
-    
+
     // If assigned_to is an object (API snake_case)
     if (ticket.assigned_to && typeof ticket.assigned_to === 'object') {
       return (ticket.assigned_to as any).name || 'Unknown';
     }
-    
+
     return 'Unassigned';
   }
 
@@ -447,8 +447,8 @@ export class AdminPageComponent implements OnInit {
   onCategoryChange(ticket: Ticket, newCategoryId: string): void {
     console.log('🔄 [ADMIN] Changing category for ticket', ticket.id, 'to', newCategoryId);
 
-    this.ticketService.updateTicket(ticket.id, { 
-      ticket_category_id: newCategoryId ? +newCategoryId : null 
+    this.ticketService.updateTicket(ticket.id, {
+      ticket_category_id: newCategoryId ? +newCategoryId : null
     }).subscribe({
       next: () => {
         console.log('✅ [ADMIN] Category changed successfully');
@@ -482,13 +482,13 @@ export class AdminPageComponent implements OnInit {
       return '';
     }
     const categoryId = String(category.id);
-    
+
     // Check if this ID exists in loaded categories
     const exists = this.ticketCategories.some(c => String(c.id) === categoryId);
     if (!exists) {
       console.warn('⚠️ [ADMIN] Category ID', categoryId, 'not found in loaded categories for ticket', ticket.id);
     }
-    
+
     return categoryId;
   }
 }

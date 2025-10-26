@@ -4,6 +4,7 @@ import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TicketResponse, Ticket } from '../../../core/models/ticket.model';
 import { AuthService } from '../../../core/services/auth.service';
 import { TicketService } from '../../../core/services/ticket.service';
+import { TranslationService } from '../../../core/services/translation.service';
 import { TimeAgoPipe } from '../../pipes/time-ago.pipe';
 import { FileUploadComponent } from '../file-upload/file-upload.component';
 import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewer.component';
@@ -36,15 +37,15 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
       <!-- Header -->
       <div class="flex items-center justify-between p-6 border-b border-gray-200 bg-gray-50">
         <div>
-          <h2 class="text-2xl font-heading font-bold text-gray-900">Responses</h2>
+          <h2 class="text-2xl font-heading font-bold text-gray-900">{{ translationService.instant('response.responses') }}</h2>
           <p class="text-sm text-gray-600 mt-1">
-            {{ responses.length }} {{ responses.length === 1 ? 'response' : 'responses' }}
+            {{ responses.length }} {{ responses.length === 1 ? translationService.instant('response.response') : translationService.instant('response.responses') }}
           </p>
         </div>
         <button 
           (click)="close()"
           class="text-gray-500 hover:text-gray-700 p-2 rounded-lg hover:bg-gray-200 transition-colors"
-          title="Close">
+          [title]="translationService.instant('app.close')">
           <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
           </svg>
@@ -59,8 +60,8 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                     d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
             </svg>
-            <p class="text-lg font-medium">No responses yet</p>
-            <p class="text-sm mt-1">Be the first to respond to this ticket</p>
+            <p class="text-lg font-medium">{{ translationService.instant('response.noResponses') }}</p>
+            <p class="text-sm mt-1">{{ translationService.instant('response.beFirst') }}</p>
           </div>
         }
 
@@ -98,7 +99,7 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                                   d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                           </svg>
-                          Internal Note
+                          {{ translationService.instant('response.internalNote') }}
                         </span>
                       }
                     </div>
@@ -125,7 +126,7 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
       <!-- Add Response Form (if ticket is not closed/resolved) -->
       @if (ticket && ticket.status !== 'closed' && ticket.status !== 'resolved') {
         <div class="border-t border-gray-200 bg-gray-50 p-6 relative z-50">
-          <h3 class="text-lg font-semibold text-gray-900 mb-4">Add Response</h3>
+          <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ translationService.instant('response.addResponse') }}</h3>
           
           <form [formGroup]="responseForm" (ngSubmit)="submitResponse()">
             <div class="mb-4">
@@ -133,11 +134,11 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
                 formControlName="body"
                 rows="3"
                 class="input-field resize-none"
-                placeholder="Type your response here..."
+                [placeholder]="translationService.instant('response.typeResponse')"
                 [class.border-danger-500]="responseForm.get('body')?.invalid && responseForm.get('body')?.touched"
               ></textarea>
               @if (responseForm.get('body')?.invalid && responseForm.get('body')?.touched) {
-                <p class="mt-1 text-sm text-danger-600">Response body is required</p>
+                <p class="mt-1 text-sm text-danger-600">{{ translationService.instant('response.bodyRequired') }}</p>
               }
             </div>
 
@@ -155,7 +156,7 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
                             d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
                     </svg>
-                    Mark as internal note (only visible to admins)
+                    {{ translationService.instant('response.markAsInternal') }}
                   </span>
                 </label>
               </div>
@@ -187,9 +188,9 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
                     <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
                     <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                   </svg>
-                  Sending...
+                  {{ translationService.instant('response.sending') }}
                 } @else {
-                  Send Response
+                  {{ translationService.instant('response.sendResponse') }}
                 }
               </button>
             </div>
@@ -209,6 +210,7 @@ export class ResponsesModalComponent {
   private fb = inject(FormBuilder);
   private ticketService = inject(TicketService);
   authService = inject(AuthService);
+  translationService = inject(TranslationService);
 
   responseError = '';
   isSubmittingResponse = false;
@@ -231,7 +233,7 @@ export class ResponsesModalComponent {
 
     // Prevent responses on resolved or closed tickets
     if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      this.responseError = 'Cannot add responses to resolved or closed tickets. Please reopen the ticket first.';
+      this.responseError = this.translationService.instant('response.cannotAddResponse');
       return;
     }
 
