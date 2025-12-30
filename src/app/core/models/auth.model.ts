@@ -34,4 +34,57 @@ export interface RegisterDto {
   email: string;
   password: string;
   password_confirmation: string;
+  phone?: string;
+  employee_id?: string;
+  department?: string;
+}
+
+export interface ForgotPasswordDto {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    message: string;
+    token?: string; // Only returned in development environment
+  };
+}
+
+export interface VerifyResetTokenDto {
+  email: string;
+  token: string;
+}
+
+export interface VerifyResetTokenResponse {
+  success: boolean;
+  message: string;
+  data?: {
+    valid: boolean;
+    email: string;
+  };
+}
+
+export interface ResetPasswordDto {
+  email: string;
+  token: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface ResetPasswordResponse {
+  success: boolean;
+  message: string;
+}
+
+export interface ChangePasswordDto {
+  current_password: string;
+  password: string;
+  password_confirmation: string;
+}
+
+export interface ChangePasswordResponse {
+  success: boolean;
+  message: string;
 }
