@@ -28,6 +28,11 @@ export const routes: Routes = [
     loadChildren: () => import('./features/settings/settings.routes').then(m => m.settingsRoutes)
   },
   {
+    path: 'reset-password',
+    redirectTo: '/auth/reset-password',
+    pathMatch: 'full'
+  },
+  {
     path: '**',
     redirectTo: '/tickets'
   }
