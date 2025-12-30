@@ -39,85 +39,42 @@ export class TicketService {
   }
 
   createTicket(data: CreateTicketDto | FormData): Observable<ApiResponse<Ticket>> {
-    console.log('📤 [TICKET SERVICE] Creating ticket');
-    
-    // If already FormData, send directly
     if (data instanceof FormData) {
       return this.http.post<ApiResponse<Ticket>>(this.apiUrl, data);
     }
-    
-    // Otherwise, check if we need to build FormData for attachments
+
     if (data.attachments && data.attachments.length > 0) {
       const formData = this.buildFormData(data);
       return this.http.post<ApiResponse<Ticket>>(this.apiUrl, formData);
     }
-    
+
     return this.http.post<ApiResponse<Ticket>>(this.apiUrl, data);
   }
 
   updateTicket(id: number, data: UpdateTicketDto | any): Observable<ApiResponse<Ticket>> {
-    console.log('📤 [TICKET SERVICE] Updating ticket:', id);
     return this.http.put<ApiResponse<Ticket>>(`${this.apiUrl}/${id}`, data);
   }
 
   deleteTicket(id: number): Observable<ApiResponse<null>> {
-    console.log('📤 [TICKET SERVICE] Deleting ticket:', id);
     return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/${id}`);
   }
 
   addResponse(ticketId: number, data: CreateResponseDto | FormData | any): Observable<ApiResponse<TicketResponse>> {
     const endpoint = `${this.apiUrl}/${ticketId}/responses`;
-    console.log('📤 [TICKET SERVICE] Adding response to ticket:', ticketId);
-    console.log('   Endpoint:', endpoint);
-    
-    // If already FormData, send directly
+
     if (data instanceof FormData) {
-      console.log('   ✉️ Payload type: FormData (with attachments)');
-      console.log('   ⚙️ FormData details:');
-      let hasBody = false;
-      let hasAttachments = false;
-      let fieldCount = 0;
-      
-      data.forEach((value, key) => {
-        fieldCount++;
-        if (key === 'body') hasBody = true;
-        if (key.startsWith('attachments')) hasAttachments = true;
-        
-        if (value instanceof File) {
-          console.log(`     ✓ ${key}: [File] ${value.name} (${value.size} bytes, type: ${value.type})`);
-        } else {
-          console.log(`     ✓ ${key}: "${value}"`);
-        }
-      });
-      
-      console.log(`   📊 Summary: ${fieldCount} fields total`);
-      console.log(`      - Body field present: ${hasBody ? '✅' : '❌'}`);
-      console.log(`      - Attachments present: ${hasAttachments ? '✅' : '❌'}`);
-      
-      if (!hasBody) {
-        console.error('   ❌ ERROR: Missing required "body" field!');
-      }
-      
       return this.http.post<ApiResponse<TicketResponse>>(endpoint, data);
     }
-    
-    // If it's a plain object with just 'body' field, send as JSON (API spec line 391-404)
+
     if (typeof data === 'object' && 'body' in data && !data.attachments) {
-      console.log('   ✉️ Payload type: JSON (no attachments)');
-      console.log('   📋 JSON payload:', JSON.stringify(data, null, 2));
       return this.http.post<ApiResponse<TicketResponse>>(endpoint, data);
     }
-    
-    // Otherwise, check if we need to build FormData for attachments
+
     if (data.attachments && data.attachments.length > 0) {
-      console.log('   ✉️ Building FormData for attachments');
       const formData = this.buildResponseFormData(data);
       return this.http.post<ApiResponse<TicketResponse>>(endpoint, formData);
     }
-    
-    // Fallback: send as JSON
-    console.log('   ✉️ Payload type: JSON (fallback)');
-    console.log('   📋 JSON payload:', JSON.stringify(data, null, 2));
+
     return this.http.post<ApiResponse<TicketResponse>>(endpoint, data);
   }
 
@@ -129,64 +86,27 @@ export class TicketService {
   }
 
   reopenTicket(ticketId: number): Observable<ApiResponse<Ticket>> {
-    console.log('📤 [TICKET SERVICE] Reopening ticket:', ticketId);
-    return this.http.post<ApiResponse<Ticket>>(
-      `${this.apiUrl}/${ticketId}/reopen`,
-      {}
-    );
+    return this.http.post<ApiResponse<Ticket>>(`${this.apiUrl}/${ticketId}/reopen`, {});
   }
 
   changeStatus(ticketId: number, status: string): Observable<ApiResponse<Ticket>> {
-    console.log('📤 [TICKET SERVICE] Changing ticket status:', ticketId, 'to', status);
-    return this.http.put<ApiResponse<Ticket>>(
-      `${this.apiUrl}/${ticketId}`,
-      { status }
-    );
+    return this.http.put<ApiResponse<Ticket>>(`${this.apiUrl}/${ticketId}`, { status });
   }
 
   changePriority(ticketId: number, priority: string): Observable<ApiResponse<Ticket>> {
-    console.log('📤 [TICKET SERVICE] Changing ticket priority:', ticketId, 'to', priority);
-    return this.http.put<ApiResponse<Ticket>>(
-      `${this.apiUrl}/${ticketId}`,
-      { priority }
-    );
+    return this.http.put<ApiResponse<Ticket>>(`${this.apiUrl}/${ticketId}`, { priority });
   }
 
-  // Attachment Management Methods
-  
-  /**
-   * Download attachment with original filename
-   * Forces browser to download the file
-   */
   downloadAttachment(attachmentId: number): Observable<Blob> {
-    console.log('📥 [TICKET SERVICE] Downloading attachment:', attachmentId);
-    return this.http.get(
-      `${this.apiUrl}/attachments/${attachmentId}`,
-      { responseType: 'blob' }
-    );
+    return this.http.get(`${this.apiUrl}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
 
-  /**
-   * View attachment in browser (for images, PDFs, etc.)
-   * Displays file inline without downloading
-   */
   viewAttachment(attachmentId: number): Observable<Blob> {
-    console.log('👁️ [TICKET SERVICE] Viewing attachment:', attachmentId);
-    return this.http.get(
-      `${this.apiUrl}/attachments/${attachmentId}/view`,
-      { responseType: 'blob' }
-    );
+    return this.http.get(`${this.apiUrl}/attachments/${attachmentId}/view`, { responseType: 'blob' });
   }
 
-  /**
-   * Delete attachment from ticket
-   * Removes file from server and database
-   */
   deleteAttachment(attachmentId: number): Observable<ApiResponse<null>> {
-    console.log('🗑️ [TICKET SERVICE] Deleting attachment:', attachmentId);
-    return this.http.delete<ApiResponse<null>>(
-      `${this.apiUrl}/attachments/${attachmentId}`
-    );
+    return this.http.delete<ApiResponse<null>>(`${this.apiUrl}/attachments/${attachmentId}`);
   }
 
   /**
@@ -248,31 +168,18 @@ export class TicketService {
 
   private buildResponseFormData(data: CreateResponseDto): FormData {
     const formData = new FormData();
-    
-    // API spec requires 'body' field (TICKETING_API_REQUESTS.md line 393)
     formData.append('body', data.body);
-    
-    // internal is optional and admin-only (line 439)
+
     if (data.internal !== undefined) {
       formData.append('internal', data.internal ? '1' : '0');
     }
-    
-    // Attachments should use 'attachments[]' format (line 464-465)
+
     if (data.attachments) {
       data.attachments.forEach(file => {
         formData.append('attachments[]', file, file.name);
       });
     }
-    
-    console.log('📋 [TICKET SERVICE] Built FormData:');
-    formData.forEach((value, key) => {
-      if (value instanceof File) {
-        console.log(`   ${key}: [File] ${value.name} (${value.size} bytes)`);
-      } else {
-        console.log(`   ${key}:`, value);
-      }
-    });
-    
+
     return formData;
   }
 }

@@ -294,39 +294,29 @@ export class AdminPageComponent implements OnInit {
   isLoading = false;
 
   ngOnInit(): void {
-    console.log('👨‍💼 [ADMIN] Dashboard initialized');
     this.loadTechnicians();
     this.loadTicketCategories();
     this.loadTickets();
   }
 
   loadTicketCategories(): void {
-    // Load all categories (active and inactive) so we can show existing selections
     this.ticketCategoryService.getTicketCategories(false).subscribe({
       next: (response) => {
         this.ticketCategories = response.data || [];
-        console.log('✅ [ADMIN] Categories loaded:', this.ticketCategories.length);
-        console.log('🔍 [ADMIN] Category IDs:', this.ticketCategories.map(c => ({ id: c.id, name: c.name })));
       },
-      error: (error) => {
-        console.error('❌ [ADMIN] Failed to load categories:', error);
-      }
+      error: () => {}
     });
   }
 
   loadTechnicians(): void {
     this.userService.getAdminsAndSuperUsers().subscribe({
       next: (response) => {
-        // Filter to get only admins (profile_id=1) and superusers (profile_id=2)
         const allUsers = response.data?.data || [];
         this.technicians = allUsers.filter(user =>
           user.profile_id === 1 || user.profile_id === 2
         );
-        console.log('✅ [ADMIN] Technicians loaded:', this.technicians);
       },
-      error: (error) => {
-        console.error('❌ [ADMIN] Failed to load technicians:', error);
-      }
+      error: () => {}
     });
   }
 
@@ -343,23 +333,17 @@ export class AdminPageComponent implements OnInit {
       next: (response) => {
         this.tickets = response.data.data || [];
 
-        // Initialize selected categories map
         this.selectedCategories.clear();
         this.tickets.forEach(ticket => {
           const category = ticket.ticketCategory || ticket.ticket_category;
           const categoryId = category ? String(category.id) : '';
           this.selectedCategories.set(ticket.id, categoryId);
-          console.log('🔍 [ADMIN] Set category for ticket', ticket.id, ':', categoryId, 'Category:', category);
         });
-
-        console.log('🔍 [ADMIN] All selected categories:', Array.from(this.selectedCategories.entries()));
 
         this.calculateStats();
         this.isLoading = false;
-        console.log('✅ [ADMIN] Tickets loaded:', this.tickets.length);
       },
-      error: (error) => {
-        console.error('❌ [ADMIN] Failed to load tickets:', error);
+      error: () => {
         this.isLoading = false;
       }
     });
@@ -376,15 +360,11 @@ export class AdminPageComponent implements OnInit {
     const userId = (event.target as HTMLSelectElement).value;
     if (!userId) return;
 
-    console.log('📌 [ADMIN] Assigning ticket', ticket.id, 'to user', userId);
-
     this.ticketService.assignTicket(ticket.id, { user_id: +userId }).subscribe({
       next: () => {
-        console.log('✅ [ADMIN] Ticket assigned successfully');
         this.loadTickets();
       },
       error: (error) => {
-        console.error('❌ [ADMIN] Failed to assign ticket:', error);
         alert('Failed to assign ticket: ' + error.message);
       }
     });
@@ -418,7 +398,6 @@ export class AdminPageComponent implements OnInit {
   }
 
   updateStatus(ticket: Ticket): void {
-    // Prevent status changes on resolved or closed tickets
     if (ticket.status === 'resolved' || ticket.status === 'closed') {
       alert('Cannot change status of resolved or closed tickets. Please reopen the ticket first from the ticket detail page.');
       return;
@@ -432,11 +411,9 @@ export class AdminPageComponent implements OnInit {
     if (newStatus && newStatus !== ticket.status) {
       this.ticketService.updateTicket(ticket.id, { status: newStatus }).subscribe({
         next: () => {
-          console.log('✅ [ADMIN] Ticket status updated');
           this.loadTickets();
         },
         error: (error) => {
-          console.error('❌ [ADMIN] Failed to update status:', error);
           alert('Failed to update status: ' + error.message);
         }
       });
@@ -444,9 +421,7 @@ export class AdminPageComponent implements OnInit {
   }
 
   getSelectedCategoryId(ticketId: number): string {
-    const categoryId = String(this.selectedCategories.get(ticketId) || '');
-    console.log('🔍 [ADMIN] Getting category for ticket', ticketId, ':', categoryId);
-    return categoryId;
+    return String(this.selectedCategories.get(ticketId) || '');
   }
 
   onCategoryChangeEvent(ticket: Ticket, event: Event): void {
@@ -455,19 +430,14 @@ export class AdminPageComponent implements OnInit {
   }
 
   onCategoryChange(ticket: Ticket, newCategoryId: string): void {
-    console.log('🔄 [ADMIN] Changing category for ticket', ticket.id, 'to', newCategoryId);
-
     this.ticketService.updateTicket(ticket.id, {
       ticket_category_id: newCategoryId ? +newCategoryId : null
     }).subscribe({
       next: () => {
-        console.log('✅ [ADMIN] Category changed successfully');
         this.loadTickets();
       },
       error: (error) => {
-        console.error('❌ [ADMIN] Failed to change category:', error);
         alert('Failed to change category: ' + error.message);
-        // Reset to original value
         const category = ticket.ticketCategory || ticket.ticket_category;
         this.selectedCategories.set(ticket.id, category ? String(category.id) : '');
       }
@@ -483,22 +453,8 @@ export class AdminPageComponent implements OnInit {
     this.loadTickets();
   }
 
-  /**
-   * Get current category ID as string for dropdown binding
-   */
   getCurrentCategoryId(ticket: Ticket): string {
     const category = ticket.ticketCategory || ticket.ticket_category;
-    if (!category) {
-      return '';
-    }
-    const categoryId = String(category.id);
-
-    // Check if this ID exists in loaded categories
-    const exists = this.ticketCategories.some(c => String(c.id) === categoryId);
-    if (!exists) {
-      console.warn('⚠️ [ADMIN] Category ID', categoryId, 'not found in loaded categories for ticket', ticket.id);
-    }
-
-    return categoryId;
+    return category ? String(category.id) : '';
   }
 }

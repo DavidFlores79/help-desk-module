@@ -198,7 +198,6 @@ export class TicketsPageComponent implements OnInit {
   errorMessage = '';
 
   ngOnInit(): void {
-    console.log('📋 [TICKETS PAGE] Component initialized');
     this.loadTickets();
   }
 
@@ -211,16 +210,12 @@ export class TicketsPageComponent implements OnInit {
       ...(this.filters.priority && { priority: this.filters.priority })
     };
 
-    console.log('🔄 [TICKETS PAGE] Loading tickets with filters:', filters);
-
     this.ticketService.getTickets(filters).subscribe({
       next: (response) => {
-        console.log('✅ [TICKETS PAGE] Tickets loaded:', response);
         this.tickets = response.data.data || [];
         this.isLoading = false;
       },
       error: (error) => {
-        console.error('❌ [TICKETS PAGE] Failed to load tickets:', error);
         this.errorMessage = error.message || 'Failed to load tickets';
         this.isLoading = false;
       }

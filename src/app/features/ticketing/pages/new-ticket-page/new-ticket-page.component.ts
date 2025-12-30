@@ -175,7 +175,6 @@ export class NewTicketPageComponent implements OnInit {
   errorMessage = '';
 
   ngOnInit(): void {
-    console.log('📋 [NEW TICKET] Component initialized');
     this.loadTicketCategories();
   }
 
@@ -183,11 +182,8 @@ export class NewTicketPageComponent implements OnInit {
     this.ticketCategoryService.getTicketCategories(true).subscribe({
       next: (response) => {
         this.ticketCategories = response.data || [];
-        console.log('✅ [NEW TICKET] Ticket categories loaded:', this.ticketCategories);
       },
-      error: (error) => {
-        console.error('❌ [NEW TICKET] Failed to load ticket categories:', error);
-      }
+      error: () => {}
     });
   }
 
@@ -207,7 +203,6 @@ export class NewTicketPageComponent implements OnInit {
         formData.append('ticket_category_id', formValue.ticket_category_id);
       }
 
-      // Add files
       const files = formValue.attachments as any;
       if (files && Array.isArray(files) && files.length > 0) {
         (files as File[]).forEach((file: File, index: number) => {
@@ -215,15 +210,11 @@ export class NewTicketPageComponent implements OnInit {
         });
       }
 
-      console.log('📤 [NEW TICKET] Submitting ticket...');
-
       this.ticketService.createTicket(formData).subscribe({
         next: (response) => {
-          console.log('✅ [NEW TICKET] Ticket created successfully:', response);
           this.router.navigate(['/tickets', response.data.id]);
         },
         error: (error) => {
-          console.error('❌ [NEW TICKET] Failed to create ticket:', error);
           this.errorMessage = error.message || 'Failed to create ticket';
           this.isSubmitting = false;
         }
