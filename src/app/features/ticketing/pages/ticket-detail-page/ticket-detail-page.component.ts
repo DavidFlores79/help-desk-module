@@ -357,23 +357,13 @@ export class TicketDetailPageComponent implements OnInit {
     this.ticketCategoryService.getTicketCategories(false).subscribe({
       next: (response) => {
         this.ticketCategories = response.data || [];
-        console.log('✅ [TICKET DETAIL] Categories loaded:', this.ticketCategories.length);
-        // Debug: log current ticket category if exists
-        if (this.ticket) {
-          const currentCat = this.ticket.ticketCategory || this.ticket.ticket_category;
-          console.log('🔍 [TICKET DETAIL] Current ticket category:', currentCat);
-          console.log('🔍 [TICKET DETAIL] Current category ID:', this.getCurrentCategoryId(this.ticket));
-        }
       },
-      error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to load categories:', error);
-      }
+      error: () => {}
     });
   }
 
   loadUsers(): void {
     this.isLoadingUsers = true;
-    console.log('🔄 [TICKET DETAIL] Loading admins and superusers for assignment');
 
     // Get all users and filter for admins/superusers on the client side
     // API returns only active users excluding current user by default
@@ -394,14 +384,8 @@ export class TicketDetailPageComponent implements OnInit {
         });
 
         this.isLoadingUsers = false;
-        console.log('✅ [TICKET DETAIL] Admins/SuperUsers loaded:', this.availableUsers.length, 'of', allUsers.length, 'total');
-
-        if (this.availableUsers.length === 0) {
-          console.warn('⚠️ [TICKET DETAIL] No admin/superuser users found for assignment');
-        }
       },
-      error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to load users:', error);
+      error: () => {
         this.isLoadingUsers = false;
       }
     });
@@ -409,7 +393,6 @@ export class TicketDetailPageComponent implements OnInit {
 
   loadTicket(id: number): void {
     this.isLoading = true;
-    console.log('🔄 [TICKET DETAIL] Loading ticket:', id);
 
     this.ticketService.getTicket(id).subscribe({
       next: (response) => {
@@ -418,38 +401,10 @@ export class TicketDetailPageComponent implements OnInit {
         // Set selected category ID for dropdown
         const category = this.ticket.ticketCategory || this.ticket.ticket_category;
         this.selectedCategoryId = category ? category.id : '';
-        console.log('🔍 [TICKET DETAIL] Set selectedCategoryId to:', this.selectedCategoryId);
 
         this.isLoading = false;
-        console.log('✅ [TICKET DETAIL] Ticket loaded successfully');
-        console.log('   Ticket ID:', this.ticket.id);
-        console.log('   Title:', this.ticket.title);
-        console.log('   Assigned To:', this.ticket.assigned_to);
-        console.log('   AssignedTo Object:', this.ticket.assignedTo);
-
-        if (this.ticket.assignments && this.ticket.assignments.length > 0) {
-          console.log('   Assignment History Count:', this.ticket.assignments.length);
-          this.ticket.assignments.forEach((assignment, index) => {
-            console.log(`   Assignment ${index + 1}:`, assignment);
-            console.log(`   Assignment ${index + 1} details:`, {
-              id: assignment.id,
-              assigned_by: assignment.assigned_by,
-              assigned_to: assignment.assigned_to,
-              assignedBy: assignment.assignedBy,
-              assignedByType: typeof assignment.assignedBy,
-              assignedByName: assignment.assignedBy?.name,
-              assignedTo: assignment.assignedTo,
-              assignedToType: typeof assignment.assignedTo,
-              assignedToName: assignment.assignedTo?.name,
-              created_at: assignment.created_at
-            });
-          });
-        } else {
-          console.log('   No assignment history found');
-        }
       },
       error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to load ticket:', error);
         this.errorMessage = error.message || 'Failed to load ticket';
         this.isLoading = false;
       }
@@ -472,7 +427,6 @@ export class TicketDetailPageComponent implements OnInit {
   }
 
   onAttachmentDeleted(attachmentId: number): void {
-    console.log('🗑️ [TICKET DETAIL] Attachment deleted, reloading ticket');
     // Reload ticket to update attachments list
     if (this.ticket) {
       this.loadTicket(this.ticket.id);
@@ -501,16 +455,13 @@ export class TicketDetailPageComponent implements OnInit {
     }
 
     this.isReopening = true;
-    console.log('🔄 [TICKET DETAIL] Reopening ticket:', this.ticket.id);
 
     this.ticketService.reopenTicket(this.ticket.id).subscribe({
-      next: (response) => {
-        console.log('✅ [TICKET DETAIL] Ticket reopened successfully:', response);
+      next: () => {
         this.loadTicket(this.ticket!.id);
         this.isReopening = false;
       },
       error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to reopen ticket:', error);
         this.errorMessage = error.message || 'Failed to reopen ticket';
         this.isReopening = false;
       }
@@ -525,16 +476,13 @@ export class TicketDetailPageComponent implements OnInit {
     }
 
     this.isDeleting = true;
-    console.log('🗑️ [TICKET DETAIL] Deleting ticket:', this.ticket.id);
 
     this.ticketService.deleteTicket(this.ticket.id).subscribe({
-      next: (response) => {
-        console.log('✅ [TICKET DETAIL] Ticket deleted successfully');
+      next: () => {
         // Redirect to tickets list
         this.router.navigate(['/tickets']);
       },
       error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to delete ticket:', error);
         this.errorMessage = error.message || 'Failed to delete ticket';
         this.isDeleting = false;
       }
@@ -546,7 +494,6 @@ export class TicketDetailPageComponent implements OnInit {
 
     // Prevent status changes on resolved or closed tickets
     if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      console.warn('⚠️ [TICKET DETAIL] Cannot change status of resolved/closed ticket. Use reopen instead.');
       this.errorMessage = 'Cannot change status of resolved or closed tickets. Please reopen the ticket first.';
       return;
     }
@@ -557,17 +504,14 @@ export class TicketDetailPageComponent implements OnInit {
     if (newStatus === this.ticket.status) return;
 
     this.isChangingStatus = true;
-    console.log('🔄 [TICKET DETAIL] Changing status from', this.ticket.status, 'to', newStatus);
 
     this.ticketService.changeStatus(this.ticket.id, newStatus).subscribe({
-      next: (response) => {
-        console.log('✅ [TICKET DETAIL] Status changed successfully:', response);
+      next: () => {
         this.isChangingStatus = false;
         // Reload the full ticket to get responses and assignment history
         this.loadTicket(this.ticket!.id);
       },
       error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to change status:', error);
         this.errorMessage = error.message || 'Failed to change status';
         this.isChangingStatus = false;
         // Reload to revert the dropdown
@@ -581,7 +525,6 @@ export class TicketDetailPageComponent implements OnInit {
 
     // Prevent priority changes on resolved or closed tickets
     if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      console.warn('⚠️ [TICKET DETAIL] Cannot change priority of resolved/closed ticket.');
       this.errorMessage = 'Cannot change priority of resolved or closed tickets. Please reopen the ticket first.';
       return;
     }
@@ -592,17 +535,14 @@ export class TicketDetailPageComponent implements OnInit {
     if (newPriority === this.ticket.priority) return;
 
     this.isChangingPriority = true;
-    console.log('🔄 [TICKET DETAIL] Changing priority from', this.ticket.priority, 'to', newPriority);
 
     this.ticketService.changePriority(this.ticket.id, newPriority).subscribe({
-      next: (response) => {
-        console.log('✅ [TICKET DETAIL] Priority changed successfully:', response);
+      next: () => {
         this.isChangingPriority = false;
         // Reload the full ticket to get responses and assignment history
         this.loadTicket(this.ticket!.id);
       },
       error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to change priority:', error);
         this.errorMessage = error.message || 'Failed to change priority';
         this.isChangingPriority = false;
         // Reload to revert the dropdown
@@ -616,7 +556,6 @@ export class TicketDetailPageComponent implements OnInit {
 
     // Prevent changes on resolved or closed tickets
     if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      console.warn('⚠️ [TICKET DETAIL] Cannot change category of resolved/closed ticket.');
       this.errorMessage = 'Cannot change category of resolved or closed tickets. Please reopen the ticket first.';
       // Reset to original value
       const category = this.ticket.ticketCategory || this.ticket.ticket_category;
@@ -624,18 +563,14 @@ export class TicketDetailPageComponent implements OnInit {
       return;
     }
 
-    console.log('🔄 [TICKET DETAIL] Changing category to', newCategoryId);
-
     this.ticketService.updateTicket(this.ticket.id, {
       ticket_category_id: newCategoryId ? +newCategoryId : null
     }).subscribe({
-      next: (response) => {
-        console.log('✅ [TICKET DETAIL] Category changed successfully:', response);
+      next: () => {
         // Reload the full ticket to get updated category
         this.loadTicket(this.ticket!.id);
       },
       error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to change category:', error);
         this.errorMessage = error.message || 'Failed to change category';
         // Reset to original value
         const category = this.ticket!.ticketCategory || this.ticket!.ticket_category;
@@ -666,7 +601,6 @@ export class TicketDetailPageComponent implements OnInit {
 
     // Prevent assignment changes on resolved or closed tickets
     if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      console.warn('⚠️ [TICKET DETAIL] Cannot assign resolved/closed ticket.');
       this.errorMessage = 'Cannot assign resolved or closed tickets. Please reopen the ticket first.';
       this.closeAssignModal();
       return;
@@ -676,18 +610,15 @@ export class TicketDetailPageComponent implements OnInit {
     if (!assignedToId) return;
 
     this.isAssigning = true;
-    console.log('🔄 [TICKET DETAIL] Assigning ticket to user:', assignedToId);
 
     this.ticketService.assignTicket(this.ticket.id, { assigned_to: assignedToId }).subscribe({
       next: (response) => {
-        console.log('✅ [TICKET DETAIL] Ticket assigned successfully:', response);
         this.ticket = response.data;
         this.isAssigning = false;
         this.closeAssignModal();
         this.loadTicket(this.ticket.id); // Reload to show assignment history
       },
       error: (error) => {
-        console.error('❌ [TICKET DETAIL] Failed to assign ticket:', error);
         this.errorMessage = error.message || 'Failed to assign ticket';
         this.isAssigning = false;
       }
@@ -758,19 +689,10 @@ export class TicketDetailPageComponent implements OnInit {
     // The API returns assigned_to and assigned_by as objects with user data
     const userObject = type === 'to' ? assignment.assigned_to : assignment.assigned_by;
 
-    console.log(`🔍 [ASSIGNMENT] Getting ${type} user name for assignment #${assignment.id}:`, {
-      userObject,
-      userObjectType: typeof userObject,
-      isObject: typeof userObject === 'object',
-      hasName: !!userObject?.name,
-      fullAssignment: assignment
-    });
-
     // Extract name from the user object
     if (userObject && typeof userObject === 'object') {
       const extractedName = this.extractUserName(userObject);
       if (extractedName) {
-        console.log(`✅ [ASSIGNMENT] Extracted ${type} user name from object:`, extractedName);
         return extractedName;
       }
     }
@@ -782,18 +704,15 @@ export class TicketDetailPageComponent implements OnInit {
       if (foundUser) {
         const userName = this.extractUserName(foundUser);
         if (userName) {
-          console.log(`✅ [ASSIGNMENT] Found ${type} user in available users:`, userName);
           return userName;
         }
       }
 
       // Fallback to user ID
-      console.warn(`⚠️ [ASSIGNMENT] Could not resolve ${type} user name, using ID:`, userId);
       return `User #${userId}`;
     }
 
     // Ultimate fallback
-    console.error(`❌ [ASSIGNMENT] No user information available for ${type}`);
     return 'Unknown User';
   }
 
@@ -835,19 +754,8 @@ export class TicketDetailPageComponent implements OnInit {
   getCurrentCategoryId(ticket: Ticket): string {
     const category = ticket.ticketCategory || ticket.ticket_category;
     if (!category) {
-      console.log('🔍 [CATEGORY] No category found for ticket');
       return '';
     }
-    const categoryId = String(category.id);
-    console.log('🔍 [CATEGORY] Category ID for dropdown:', categoryId, 'Category name:', category.name);
-
-    // Check if this ID exists in loaded categories
-    const exists = this.ticketCategories.some(c => String(c.id) === categoryId);
-    if (!exists) {
-      console.warn('⚠️ [CATEGORY] Category ID', categoryId, 'not found in loaded categories!');
-      console.log('Available categories:', this.ticketCategories.map(c => ({ id: c.id, name: c.name })));
-    }
-
-    return categoryId;
+    return String(category.id);
   }
 }
