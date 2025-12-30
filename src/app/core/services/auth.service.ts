@@ -3,7 +3,21 @@ import { HttpClient } from '@angular/common/http';
 import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
-import { LoginCredentials, LoginResponse, AuthUser, RegisterDto, UserRole } from '../models/auth.model';
+import {
+  LoginCredentials,
+  LoginResponse,
+  AuthUser,
+  RegisterDto,
+  UserRole,
+  ForgotPasswordDto,
+  ForgotPasswordResponse,
+  VerifyResetTokenDto,
+  VerifyResetTokenResponse,
+  ResetPasswordDto,
+  ResetPasswordResponse,
+  ChangePasswordDto,
+  ChangePasswordResponse
+} from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
 
 @Injectable({
@@ -243,28 +257,101 @@ export class AuthService {
   hasRole(role: string | string[]): boolean {
     const user = this.getCurrentUser();
     if (!user) return false;
-    
+
     const roles = Array.isArray(role) ? role : [role];
-    
+
     // Check computed role field
     if (user.role && roles.includes(user.role)) {
       return true;
     }
-    
+
     // Check my_profile.name
     if (user.my_profile && user.my_profile.name) {
       const profileName = user.my_profile.name.toLowerCase();
-      if (roles.some(r => r.toLowerCase() === profileName || 
+      if (roles.some(r => r.toLowerCase() === profileName ||
                          (r === 'admin' && profileName === 'administrador'))) {
         return true;
       }
     }
-    
+
     // Check permissions array
     if (user.permissions && Array.isArray(user.permissions)) {
       return roles.some(r => user.permissions!.includes(r));
     }
-    
+
     return false;
+  }
+
+  /**
+   * Request a password reset email
+   * Sends a reset link to the user's email address
+   */
+  forgotPassword(data: ForgotPasswordDto): Observable<ForgotPasswordResponse> {
+    const url = `${environment.apiUrl}/v1/auth/forgot-password`;
+    console.log('📧 [AUTH] Requesting password reset...', { url, email: data.email });
+
+    return this.http.post<ForgotPasswordResponse>(url, data).pipe(
+      tap(response => {
+        console.log('✅ [AUTH] Password reset email sent:', response);
+      }),
+      catchError(error => {
+        console.error('❌ [AUTH] Password reset request failed:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Verify a password reset token is valid
+   */
+  verifyResetToken(data: VerifyResetTokenDto): Observable<VerifyResetTokenResponse> {
+    const url = `${environment.apiUrl}/v1/auth/verify-reset-token`;
+    console.log('🔍 [AUTH] Verifying reset token...', { url, email: data.email });
+
+    return this.http.post<VerifyResetTokenResponse>(url, data).pipe(
+      tap(response => {
+        console.log('✅ [AUTH] Token verification result:', response);
+      }),
+      catchError(error => {
+        console.error('❌ [AUTH] Token verification failed:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Reset the password using a valid token
+   */
+  resetPassword(data: ResetPasswordDto): Observable<ResetPasswordResponse> {
+    const url = `${environment.apiUrl}/v1/auth/reset-password`;
+    console.log('🔐 [AUTH] Resetting password...', { url, email: data.email });
+
+    return this.http.post<ResetPasswordResponse>(url, data).pipe(
+      tap(response => {
+        console.log('✅ [AUTH] Password reset successful:', response);
+      }),
+      catchError(error => {
+        console.error('❌ [AUTH] Password reset failed:', error);
+        throw error;
+      })
+    );
+  }
+
+  /**
+   * Change password for authenticated user
+   */
+  changePassword(data: ChangePasswordDto): Observable<ChangePasswordResponse> {
+    const url = `${environment.apiUrl}/v1/auth/change-password`;
+    console.log('🔐 [AUTH] Changing password...');
+
+    return this.http.post<ChangePasswordResponse>(url, data).pipe(
+      tap(response => {
+        console.log('✅ [AUTH] Password changed successfully:', response);
+      }),
+      catchError(error => {
+        console.error('❌ [AUTH] Password change failed:', error);
+        throw error;
+      })
+    );
   }
 }

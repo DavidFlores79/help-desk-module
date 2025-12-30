@@ -1,7 +1,7 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router } from '@angular/router';
+import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { environment } from '../../../../../environments/environment';
@@ -10,7 +10,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 @Component({
   selector: 'app-login-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, TranslatePipe],
+  imports: [CommonModule, ReactiveFormsModule, RouterLink, TranslatePipe],
   template: `
     <div class="card">
       <!-- API Diagnostic Info (Development Only) -->
@@ -68,6 +68,15 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
         >
           {{ isLoading ? ('auth.signingIn' | translate) : ('auth.signIn' | translate) }}
         </button>
+
+        <div class="mt-4 flex items-center justify-between">
+          <a routerLink="/auth/forgot-password" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+            {{ 'auth.forgotPassword' | translate }}
+          </a>
+          <a routerLink="/auth/register" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
+            {{ 'auth.createAccount' | translate }}
+          </a>
+        </div>
 
         <!-- Test Credentials (Development Only) -->
         @if (!isProduction) {
