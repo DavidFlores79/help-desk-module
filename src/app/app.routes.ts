@@ -1,6 +1,7 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { adminGuard } from './core/guards/admin.guard';
+import { RedirectWithParamsComponent } from './core/components/redirect-with-params.component';
 
 export const routes: Routes = [
   {
@@ -29,8 +30,8 @@ export const routes: Routes = [
   },
   {
     path: 'reset-password',
-    redirectTo: '/auth/reset-password',
-    pathMatch: 'full'
+    component: RedirectWithParamsComponent,
+    data: { redirectTo: '/auth/reset-password' }
   },
   {
     path: '**',
