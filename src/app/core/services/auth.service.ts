@@ -1,6 +1,6 @@
 import { Injectable, inject, signal } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, BehaviorSubject, tap, catchError, of } from 'rxjs';
+import { Observable, BehaviorSubject, tap } from 'rxjs';
 import { Router } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import {
@@ -41,76 +41,29 @@ export class AuthService {
   }
 
   private initializeAuth(): void {
-    console.log('🔧 [AUTH] Initializing auth service...');
     const token = this.getToken();
     const user = this.getUserFromStorage();
-    
-    console.log('🔧 [AUTH] Auth state:', {
-      hasToken: !!token,
-      hasUser: !!user,
-      user: user
-    });
-    
+
     if (token && user) {
-      console.log('✅ [AUTH] Existing session found, restoring...');
       this.currentUserSubject.next(user);
       this.isAuthenticated.set(true);
-    } else {
-      console.log('ℹ️ [AUTH] No existing session found');
     }
   }
 
   login(credentials: LoginCredentials): Observable<any> {
-    const loginUrl = `${environment.apiUrl}/login`;
-    console.log('🔐 [AUTH] Attempting login...', {
-      url: loginUrl,
-      email: credentials.email,
-      environment: environment.production ? 'production' : 'development'
-    });
-
-    return this.http.post<any>(
-      loginUrl,
-      credentials
-    ).pipe(
+    return this.http.post<any>(`${environment.apiUrl}/login`, credentials).pipe(
       tap(response => {
-        console.log('✅ [AUTH] Login response received:', response);
-        
-        // Handle the actual API response format
-        if (response.success && response.jwt && response.user) {
-          console.log('✅ [AUTH] Login successful, setting session...');
+        if (response.jwt && response.user) {
           const user = this.normalizeUser(response.user);
           this.setSession(response.jwt, user);
-          console.log('✅ [AUTH] Session set, user authenticated with role:', user.role);
-        } else if (response.jwt && response.user) {
-          // Handle case where success field might not exist
-          console.log('✅ [AUTH] Login successful (no success field), setting session...');
-          const user = this.normalizeUser(response.user);
-          this.setSession(response.jwt, user);
-          console.log('✅ [AUTH] Session set, user authenticated with role:', user.role);
-        } else {
-          console.warn('⚠️ [AUTH] Login response missing jwt or user:', response);
         }
-      }),
-      catchError(error => {
-        console.error('❌ [AUTH] Login failed:', {
-          status: error.status,
-          statusText: error.statusText,
-          message: error.message,
-          url: loginUrl,
-          error: error
-        });
-        throw error;
       })
     );
   }
 
   register(data: RegisterDto): Observable<any> {
-    return this.http.post<any>(
-      `${environment.apiUrl}/register`,
-      data
-    ).pipe(
+    return this.http.post<any>(`${environment.apiUrl}/register`, data).pipe(
       tap(response => {
-        console.log('✅ [AUTH] Registration response:', response);
         if (response.jwt && response.user) {
           const user = this.normalizeUser(response.user);
           this.setSession(response.jwt, user);
@@ -120,7 +73,6 @@ export class AuthService {
   }
 
   logout(): void {
-    console.log('🚪 [AUTH] Logging out...');
     this.clearSession();
     this.router.navigate(['/auth/login']);
   }
@@ -130,32 +82,18 @@ export class AuthService {
    * Maps my_profile.name to internal role
    */
   private normalizeUser(user: any): AuthUser {
-    console.log('🔄 [AUTH] Normalizing user data:', user);
-    
-    let role: UserRole = 'user'; // default role
-    
-    // Check if my_profile exists and has a name field
+    let role: UserRole = 'user';
+
     if (user.my_profile && user.my_profile.name) {
       const profileName = user.my_profile.name.toLowerCase();
-      console.log('🔍 [AUTH] Profile name found:', user.my_profile.name);
-      
       if (profileName === 'superuser') {
         role = 'superuser';
       } else if (profileName === 'administrador' || profileName === 'admin') {
         role = 'admin';
-      } else {
-        role = 'user';
       }
-      
-      console.log('✅ [AUTH] Mapped profile to role:', role);
-    } else {
-      console.warn('⚠️ [AUTH] No my_profile found in user data, defaulting to "user" role');
     }
-    
-    return {
-      ...user,
-      role: role
-    };
+
+    return { ...user, role };
   }
 
   private setSession(token: string, user: AuthUser): void {
@@ -193,43 +131,24 @@ export class AuthService {
 
   isAdmin(): boolean {
     const user = this.getCurrentUser();
-    if (!user) {
-      console.log('🔍 [AUTH] isAdmin check: No user found');
-      return false;
-    }
-    
-    console.log('🔍 [AUTH] isAdmin check for user:', {
-      id: user.id,
-      name: user.name,
-      role: user.role,
-      profile: user.my_profile
-    });
-    
+    if (!user) return false;
+
     // Check computed role field (set by normalizeUser)
     if (user.role) {
-      const isAdmin = user.role === 'admin' || user.role === 'superuser';
-      console.log(`✅ [AUTH] Admin check result: ${isAdmin} (role: ${user.role})`);
-      return isAdmin;
+      return user.role === 'admin' || user.role === 'superuser';
     }
-    
+
     // Fallback: check my_profile.name directly
     if (user.my_profile && user.my_profile.name) {
       const profileName = user.my_profile.name.toLowerCase();
-      const isAdmin = profileName === 'administrador' || 
-                     profileName === 'admin' || 
-                     profileName === 'superuser';
-      console.log(`✅ [AUTH] Admin check result (from profile): ${isAdmin} (profile: ${user.my_profile.name})`);
-      return isAdmin;
+      return profileName === 'administrador' || profileName === 'admin' || profileName === 'superuser';
     }
-    
+
     // Check for permissions array if it exists
     if (user.permissions && Array.isArray(user.permissions)) {
-      const isAdmin = user.permissions.includes('admin') || user.permissions.includes('superuser');
-      console.log(`✅ [AUTH] Admin check result (from permissions): ${isAdmin}`);
-      return isAdmin;
+      return user.permissions.includes('admin') || user.permissions.includes('superuser');
     }
-    
-    console.warn('⚠️ [AUTH] Could not determine admin status');
+
     return false;
   }
 
@@ -284,74 +203,29 @@ export class AuthService {
 
   /**
    * Request a password reset email
-   * Sends a reset link to the user's email address
    */
   forgotPassword(data: ForgotPasswordDto): Observable<ForgotPasswordResponse> {
-    const url = `${environment.apiUrl}/v1/auth/forgot-password`;
-    console.log('📧 [AUTH] Requesting password reset...', { url, email: data.email });
-
-    return this.http.post<ForgotPasswordResponse>(url, data).pipe(
-      tap(response => {
-        console.log('✅ [AUTH] Password reset email sent:', response);
-      }),
-      catchError(error => {
-        console.error('❌ [AUTH] Password reset request failed:', error);
-        throw error;
-      })
-    );
+    return this.http.post<ForgotPasswordResponse>(`${environment.apiUrl}/v1/auth/forgot-password`, data);
   }
 
   /**
    * Verify a password reset token is valid
    */
   verifyResetToken(data: VerifyResetTokenDto): Observable<VerifyResetTokenResponse> {
-    const url = `${environment.apiUrl}/v1/auth/verify-reset-token`;
-    console.log('🔍 [AUTH] Verifying reset token...', { url, email: data.email });
-
-    return this.http.post<VerifyResetTokenResponse>(url, data).pipe(
-      tap(response => {
-        console.log('✅ [AUTH] Token verification result:', response);
-      }),
-      catchError(error => {
-        console.error('❌ [AUTH] Token verification failed:', error);
-        throw error;
-      })
-    );
+    return this.http.post<VerifyResetTokenResponse>(`${environment.apiUrl}/v1/auth/verify-reset-token`, data);
   }
 
   /**
    * Reset the password using a valid token
    */
   resetPassword(data: ResetPasswordDto): Observable<ResetPasswordResponse> {
-    const url = `${environment.apiUrl}/v1/auth/reset-password`;
-    console.log('🔐 [AUTH] Resetting password...', { url, email: data.email });
-
-    return this.http.post<ResetPasswordResponse>(url, data).pipe(
-      tap(response => {
-        console.log('✅ [AUTH] Password reset successful:', response);
-      }),
-      catchError(error => {
-        console.error('❌ [AUTH] Password reset failed:', error);
-        throw error;
-      })
-    );
+    return this.http.post<ResetPasswordResponse>(`${environment.apiUrl}/v1/auth/reset-password`, data);
   }
 
   /**
    * Change password for authenticated user
    */
   changePassword(data: ChangePasswordDto): Observable<ChangePasswordResponse> {
-    const url = `${environment.apiUrl}/v1/auth/change-password`;
-    console.log('🔐 [AUTH] Changing password...');
-
-    return this.http.post<ChangePasswordResponse>(url, data).pipe(
-      tap(response => {
-        console.log('✅ [AUTH] Password changed successfully:', response);
-      }),
-      catchError(error => {
-        console.error('❌ [AUTH] Password change failed:', error);
-        throw error;
-      })
-    );
+    return this.http.post<ChangePasswordResponse>(`${environment.apiUrl}/v1/auth/change-password`, data);
   }
 }

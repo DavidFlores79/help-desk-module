@@ -3,7 +3,6 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
-import { TranslationService } from '../../../../core/services/translation.service';
 import { environment } from '../../../../../environments/environment';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
@@ -57,7 +56,6 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           <div class="mb-4 p-4 bg-danger-50 border border-danger-200 rounded-lg">
             <p class="text-sm font-semibold text-danger-900 mb-1">{{ 'auth.errorLabel' | translate }}</p>
             <p class="text-sm text-danger-700">{{ errorMessage }}</p>
-            <p class="text-xs text-danger-600 mt-2">{{ 'auth.checkConsoleDetailed' | translate }}</p>
           </div>
         }
 
@@ -94,7 +92,6 @@ export class LoginFormComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
-  private translationService = inject(TranslationService);
 
   // Expose API URL and environment for template
   apiUrl = `${environment.apiUrl}/login`;
@@ -108,69 +105,23 @@ export class LoginFormComponent {
   isLoading = false;
   errorMessage = '';
 
-  constructor() {
-    // Log component initialization (development only)
-    if (!this.isProduction) {
-      console.log('🎯 [LOGIN FORM] Component initialized', {
-        apiUrl: this.apiUrl,
-        environment: environment
-      });
-    }
-  }
-
   onSubmit(): void {
     if (this.loginForm.valid) {
-      if (!this.isProduction) {
-        console.log('📋 [LOGIN FORM] Form submitted', {
-          email: this.loginForm.value.email,
-          hasPassword: !!this.loginForm.value.password
-        });
-      }
-
       this.isLoading = true;
       this.errorMessage = '';
 
       this.authService.login(this.loginForm.value as any).subscribe({
-        next: (response) => {
-          if (!this.isProduction) {
-            console.log('✅ [LOGIN FORM] Login successful, navigating to /tickets', response);
-          }
+        next: () => {
           this.router.navigate(['/tickets']);
         },
         error: (error) => {
-          if (!this.isProduction) {
-            console.error('❌ [LOGIN FORM] Login failed:', error);
-          }
-          
-          // Create a user-friendly error message
-          let message = this.translationService.instant('auth.loginFailed') + ' ';
-          if (error.status === 0) {
-            message += this.translationService.instant('auth.cannotConnect');
-          } else if (error.status === 404) {
-            message += this.translationService.instant('auth.endpointNotFound');
-          } else if (error.details) {
-            message += error.details;
-          } else {
-            message += error.message || this.translationService.instant('auth.tryAgain');
-          }
-          
-          this.errorMessage = message;
+          this.errorMessage = error.message || 'Por favor intenta de nuevo';
           this.isLoading = false;
         },
         complete: () => {
-          if (!this.isProduction) {
-            console.log('🏁 [LOGIN FORM] Login request completed');
-          }
           this.isLoading = false;
         }
       });
-    } else {
-      if (!this.isProduction) {
-        console.warn('⚠️ [LOGIN FORM] Form is invalid', {
-          emailErrors: this.loginForm.get('email')?.errors,
-          passwordErrors: this.loginForm.get('password')?.errors
-        });
-      }
     }
   }
 }
