@@ -2,7 +2,6 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Attachment } from '../../../core/models/ticket.model';
 import { TicketService } from '../../../core/services/ticket.service';
-import { AuthService } from '../../../core/services/auth.service';
 
 @Component({
   selector: 'app-attachment-viewer',
@@ -110,7 +109,6 @@ export class AttachmentViewerComponent {
   @Output() attachmentDeleted = new EventEmitter<number>();
 
   private ticketService = inject(TicketService);
-  private authService = inject(AuthService);
 
   isProcessing: { [key: number]: boolean } = {};
   errorMessage = '';
@@ -175,7 +173,6 @@ export class AttachmentViewerComponent {
   }
 
   viewAttachment(attachment: Attachment): void {
-    console.log('👁️ [ATTACHMENT] Viewing attachment:', attachment.id);
     const viewUrl = this.ticketService.getAttachmentViewUrl(attachment.id);
     window.open(viewUrl, '_blank');
   }
@@ -183,29 +180,26 @@ export class AttachmentViewerComponent {
   downloadAttachment(attachment: Attachment): void {
     this.isProcessing[attachment.id] = true;
     this.errorMessage = '';
-    console.log('📥 [ATTACHMENT] Downloading attachment:', attachment.id);
 
     this.ticketService.downloadAttachment(attachment.id).subscribe({
       next: (blob) => {
         // Create a temporary URL for the blob
         const url = window.URL.createObjectURL(blob);
-        
+
         // Create a temporary anchor element and trigger download
         const a = document.createElement('a');
         a.href = url;
         a.download = attachment.original_name || attachment.name || `attachment-${attachment.id}`;
         document.body.appendChild(a);
         a.click();
-        
+
         // Cleanup
         window.URL.revokeObjectURL(url);
         document.body.removeChild(a);
-        
+
         this.isProcessing[attachment.id] = false;
-        console.log('✅ [ATTACHMENT] Download completed');
       },
-      error: (error) => {
-        console.error('❌ [ATTACHMENT] Download failed:', error);
+      error: () => {
         this.errorMessage = 'Failed to download attachment. Please try again.';
         this.isProcessing[attachment.id] = false;
       }
@@ -219,16 +213,13 @@ export class AttachmentViewerComponent {
 
     this.isProcessing[attachment.id] = true;
     this.errorMessage = '';
-    console.log('🗑️ [ATTACHMENT] Deleting attachment:', attachment.id);
 
     this.ticketService.deleteAttachment(attachment.id).subscribe({
       next: () => {
-        console.log('✅ [ATTACHMENT] Attachment deleted successfully');
         this.isProcessing[attachment.id] = false;
         this.attachmentDeleted.emit(attachment.id);
       },
       error: (error) => {
-        console.error('❌ [ATTACHMENT] Delete failed:', error);
         this.errorMessage = error.message || 'Failed to delete attachment. You may not have permission.';
         this.isProcessing[attachment.id] = false;
       }

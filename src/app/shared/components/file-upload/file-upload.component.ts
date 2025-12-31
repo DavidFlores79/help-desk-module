@@ -78,12 +78,11 @@ export class FileUploadComponent implements ControlValueAccessor, OnInit {
   }
 
   handleInit(): void {
-    console.log('✅ [FILE UPLOAD] FilePond initialized');
+    // FilePond initialized
   }
 
   handleAddFile(event: any): void {
     const file = event.file.file as File;
-    console.log('📎 [FILE UPLOAD] File added:', file.name, `(${file.size} bytes)`);
     this.files.push(file);
     this.onChange(this.files);
     this.onTouched();
@@ -91,7 +90,6 @@ export class FileUploadComponent implements ControlValueAccessor, OnInit {
 
   handleRemoveFile(event: any): void {
     const file = event.file.file as File;
-    console.log('🗑️ [FILE UPLOAD] File removed:', file.name);
     this.files = this.files.filter(f => f !== file);
     this.onChange(this.files);
   }

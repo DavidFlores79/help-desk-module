@@ -49,8 +49,6 @@ export class UserService {
       });
     }
 
-    console.log('🔄 [USER SERVICE] Fetching users with params:', params.toString());
-    
     return this.http.get<ApiResponse<UserListResponse>>(this.apiUrl, { params });
   }
 
@@ -70,8 +68,6 @@ export class UserService {
       // Note: Not filtering by profile_id here because we need both 1 and 2
       // Will filter client-side in component
     };
-    
-    console.log('🔄 [USER SERVICE] Fetching admins and superusers for assignment');
     
     return this.getUsers(filters);
   }

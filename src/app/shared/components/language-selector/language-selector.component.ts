@@ -112,11 +112,8 @@ export class LanguageSelectorComponent implements OnInit {
 
     try {
       this.translationService.changeLanguage(newLang);
-      // Note: The page will reload, so the success message won't be visible
-    } catch (error) {
+    } catch {
       this.errorMessage = this.translationService.instant('settings.languageError');
-      console.error('Error changing language:', error);
-      // Reset to current language on error
       this.currentLanguage = this.translationService.getCurrentLanguage();
     }
   }

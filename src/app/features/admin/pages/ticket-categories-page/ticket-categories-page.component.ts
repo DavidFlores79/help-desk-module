@@ -228,10 +228,8 @@ export class TicketCategoriesPageComponent implements OnInit {
       next: (response) => {
         this.categories = response.data || [];
         this.isLoading = false;
-        console.log('✅ [CATEGORIES] Loaded:', this.categories.length);
       },
-      error: (error) => {
-        console.error('❌ [CATEGORIES] Failed to load:', error);
+      error: () => {
         this.errorMessage = 'Failed to load categories';
         this.isLoading = false;
       }
@@ -256,47 +254,37 @@ export class TicketCategoriesPageComponent implements OnInit {
     const formValue = this.categoryForm.value;
 
     if (this.showEditModal && this.editingCategory) {
-      // Update existing category
       const updateData: UpdateTicketCategoryDto = {
         name: formValue.name!,
         description: formValue.description || undefined,
         active: formValue.active!
       };
 
-      console.log('💾 [CATEGORIES] Updating category:', this.editingCategory.id, updateData);
-
       this.ticketCategoryService.updateTicketCategory(this.editingCategory.id, updateData).subscribe({
-        next: (response) => {
-          console.log('✅ [CATEGORIES] Category updated successfully:', response);
+        next: () => {
           this.isSaving = false;
           this.closeModals();
           this.loadCategories();
         },
         error: (error) => {
-          console.error('❌ [CATEGORIES] Failed to update category:', error);
           this.errorMessage = error.message || 'Failed to update category';
           this.isSaving = false;
         }
       });
     } else {
-      // Create new category
       const createData: CreateTicketCategoryDto = {
         name: formValue.name!,
         description: formValue.description || undefined,
         active: formValue.active ?? true
       };
 
-      console.log('💾 [CATEGORIES] Creating new category:', createData);
-
       this.ticketCategoryService.createTicketCategory(createData).subscribe({
-        next: (response) => {
-          console.log('✅ [CATEGORIES] Category created successfully:', response);
+        next: () => {
           this.isSaving = false;
           this.closeModals();
           this.loadCategories();
         },
         error: (error) => {
-          console.error('❌ [CATEGORIES] Failed to create category:', error);
           this.errorMessage = error.message || 'Failed to create category';
           this.isSaving = false;
         }
@@ -312,15 +300,11 @@ export class TicketCategoriesPageComponent implements OnInit {
       return;
     }
 
-    console.log(`🔄 [CATEGORIES] ${action === 'activate' ? 'Activating' : 'Deactivating'} category:`, category.name);
-
     this.ticketCategoryService.updateTicketCategory(category.id, { active: newStatus }).subscribe({
-      next: (response) => {
-        console.log('✅ [CATEGORIES] Category status updated successfully:', response);
+      next: () => {
         this.loadCategories();
       },
       error: (error) => {
-        console.error('❌ [CATEGORIES] Failed to update category status:', error);
         this.errorMessage = error.message || 'Failed to update category status';
       }
     });
