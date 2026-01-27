@@ -103,6 +103,8 @@ export interface Ticket {
   due_at: string | null;
   reopens: number;
   resolved_at: string | null;
+  resolution_hours: number | null;
+  last_reopened_at: string | null;
   created_at: string;
   updated_at: string;
   deleted_at: string | null;

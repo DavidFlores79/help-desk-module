@@ -14,6 +14,7 @@ import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
 import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe';
 import { ResponsesModalComponent } from '../../../../shared/components/responses-modal/responses-modal.component';
 import { AttachmentViewerComponent } from '../../../../shared/components/attachment-viewer/attachment-viewer.component';
+import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolution-time-pipe';
 
 @Component({
   selector: 'app-ticket-detail-page',
@@ -28,7 +29,8 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
     StatusBadgePipe,
     PriorityBadgePipe,
     ResponsesModalComponent,
-    AttachmentViewerComponent
+    AttachmentViewerComponent,
+    FormatResolutionTimePipe
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -157,6 +159,41 @@ import { AttachmentViewerComponent } from '../../../../shared/components/attachm
                 </div>
               </div>
             </div>
+
+            <!-- Resolution Metrics -->
+            @if (ticket.status === 'resolved' || ticket.status === 'closed') {
+              <div class="pt-4 border-t border-gray-200 mt-4">
+                <p class="text-sm font-medium text-gray-700 mb-3">📊 Métricas de Resolución</p>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
+                    <p class="text-xs text-blue-600 font-medium mb-1">Tiempo de Resolución</p>
+                    @if (ticket.resolution_hours) {
+                      <p class="text-lg font-bold text-blue-700">{{ ticket.resolution_hours | formatResolutionTime }}</p>
+                      <p class="text-xs text-blue-500 mt-1">(Excluye fines de semana)</p>
+                    } @else {
+                      <p class="text-sm text-gray-500">No registrado</p>
+                    }
+                  </div>
+
+                  @if (ticket.reopens && ticket.reopens > 0) {
+                    <div class="bg-orange-50 border border-orange-200 rounded-lg p-3">
+                      <p class="text-xs text-orange-600 font-medium mb-1">Reaperturas</p>
+                      <p class="text-lg font-bold text-orange-700">🔄 {{ ticket.reopens }} {{ ticket.reopens === 1 ? 'vez' : 'veces' }}</p>
+                      @if (ticket.last_reopened_at && ticket.last_reopened_at !== null) {
+                        <p class="text-xs text-orange-500 mt-1">Última: {{ ticket.last_reopened_at | timeAgo }}</p>
+                      }
+                    </div>
+                  }
+
+                  @if (ticket.resolved_at) {
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <p class="text-xs text-green-600 font-medium mb-1">Fecha Resolución</p>
+                      <p class="text-sm font-bold text-green-700">{{ ticket.resolved_at | timeAgo }}</p>
+                    </div>
+                  }
+                </div>
+              </div>
+            }
 
             <!-- Assignment History -->
             @if (ticket.assignments && ticket.assignments.length > 0) {

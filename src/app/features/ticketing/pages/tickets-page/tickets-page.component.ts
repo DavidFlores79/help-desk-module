@@ -10,6 +10,7 @@ import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
 import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolution-time-pipe';
 
 @Component({
   selector: 'app-tickets-page',
@@ -22,7 +23,8 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
     TimeAgoPipe,
     StatusBadgePipe,
     PriorityBadgePipe,
-    TranslatePipe
+    TranslatePipe,
+    FormatResolutionTimePipe
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -115,31 +117,45 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                   }
                 </div>
 
-                <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 text-xs sm:text-sm text-gray-500">
-                  <div class="flex items-center gap-3 flex-wrap">
-                    <span class="flex items-center gap-1 truncate">
-                      <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                              d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
-                      </svg>
-                      <span class="truncate">{{ ticket.user.name || 'Unknown' }}</span>
-                    </span>
-                    @if (ticket.assignedTo) {
-                      <span class="flex items-center gap-1 text-primary-600 truncate">
+                <div class="flex flex-col gap-2 text-xs sm:text-sm text-gray-500">
+                  <div class="flex items-center justify-between gap-2">
+                    <div class="flex items-center gap-3 flex-wrap">
+                      <span class="flex items-center gap-1 truncate">
                         <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
                         </svg>
-                        <span class="truncate">{{ ticket.assignedTo.name }}</span>
+                        <span class="truncate">{{ ticket.user.name || 'Unknown' }}</span>
                       </span>
-                    }
-                  </div>
-                  <div class="flex flex-col items-end gap-1">
+                      @if (ticket.assignedTo) {
+                        <span class="flex items-center gap-1 text-primary-600 truncate">
+                          <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                  d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                          </svg>
+                          <span class="truncate">{{ ticket.assignedTo.name }}</span>
+                        </span>
+                      }
+                    </div>
                     <span class="whitespace-nowrap">{{ ticket.created_at | timeAgo }}</span>
-                    @if (ticket.resolved_at && (ticket.status === 'resolved' || ticket.status === 'closed')) {
-                      <span class="whitespace-nowrap text-green-600 font-medium text-xs">✓ {{ ticket.resolved_at | timeAgo }}</span>
-                    }
                   </div>
+
+                  @if (ticket.status === 'resolved' || ticket.status === 'closed') {
+                    <div class="flex flex-col gap-1 border-t border-gray-200 pt-2">
+                      @if (ticket.resolution_hours) {
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-600">Tiempo Resolución:</span>
+                          <span class="text-xs font-medium text-blue-600">{{ ticket.resolution_hours | formatResolutionTime }}</span>
+                        </div>
+                      }
+                      @if (ticket.reopens && ticket.reopens > 0) {
+                        <div class="flex items-center justify-between">
+                          <span class="text-xs text-gray-600">Reaperturas:</span>
+                          <span class="text-xs font-medium text-orange-600">🔄 {{ ticket.reopens }} {{ ticket.reopens === 1 ? 'vez' : 'veces' }}</span>
+                        </div>
+                      }
+                    </div>
+                  }
                 </div>
               </div>
             }
