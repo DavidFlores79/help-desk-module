@@ -164,9 +164,23 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
             @if (ticket.status === 'resolved' || ticket.status === 'closed') {
               <div class="pt-4 border-t border-gray-200 mt-4">
                 <p class="text-sm font-medium text-gray-700 mb-3">📊 Métricas de Resolución</p>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+                  <div class="bg-purple-50 border border-purple-200 rounded-lg p-3">
+                    <p class="text-xs text-purple-600 font-medium mb-1">Fecha Creación</p>
+                    <p class="text-sm font-bold text-purple-700">{{ ticket.created_at | date:'dd/MM/yyyy' }}</p>
+                    <p class="text-xs text-purple-500 mt-1">{{ ticket.created_at | date:'HH:mm' }}</p>
+                  </div>
+
+                  @if (ticket.resolved_at) {
+                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
+                      <p class="text-xs text-green-600 font-medium mb-1">Fecha Resolución</p>
+                      <p class="text-sm font-bold text-green-700">{{ ticket.resolved_at | date:'dd/MM/yyyy' }}</p>
+                      <p class="text-xs text-green-500 mt-1">{{ ticket.resolved_at | date:'HH:mm' }}</p>
+                    </div>
+                  }
+
                   <div class="bg-blue-50 border border-blue-200 rounded-lg p-3">
-                    <p class="text-xs text-blue-600 font-medium mb-1">Tiempo de Resolución</p>
+                    <p class="text-xs text-blue-600 font-medium mb-1">Tiempo Resolución</p>
                     @if (ticket.resolution_hours) {
                       <p class="text-lg font-bold text-blue-700">{{ ticket.resolution_hours | formatResolutionTime }}</p>
                       <p class="text-xs text-blue-500 mt-1">(Excluye fines de semana)</p>
@@ -180,15 +194,8 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
                       <p class="text-xs text-orange-600 font-medium mb-1">Reaperturas</p>
                       <p class="text-lg font-bold text-orange-700">🔄 {{ ticket.reopens }} {{ ticket.reopens === 1 ? 'vez' : 'veces' }}</p>
                       @if (ticket.last_reopened_at && ticket.last_reopened_at !== null) {
-                        <p class="text-xs text-orange-500 mt-1">Última: {{ ticket.last_reopened_at | timeAgo }}</p>
+                        <p class="text-xs text-orange-500 mt-1">Última: {{ ticket.last_reopened_at | date:'dd/MM/yyyy HH:mm' }}</p>
                       }
-                    </div>
-                  }
-
-                  @if (ticket.resolved_at) {
-                    <div class="bg-green-50 border border-green-200 rounded-lg p-3">
-                      <p class="text-xs text-green-600 font-medium mb-1">Fecha Resolución</p>
-                      <p class="text-sm font-bold text-green-700">{{ ticket.resolved_at | timeAgo }}</p>
                     </div>
                   }
                 </div>
