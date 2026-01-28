@@ -62,7 +62,7 @@ export class AuthService {
   }
 
   register(data: RegisterDto): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/register`, data).pipe(
+    return this.http.post<any>(`${environment.apiUrl}/v1/auth/register`, data).pipe(
       tap(response => {
         if (response.jwt && response.user) {
           const user = this.normalizeUser(response.user);
