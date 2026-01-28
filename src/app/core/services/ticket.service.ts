@@ -97,6 +97,36 @@ export class TicketService {
     return this.http.put<ApiResponse<Ticket>>(`${this.apiUrl}/${ticketId}`, { priority });
   }
 
+  // Export Methods
+
+  /**
+   * Export tickets to PDF with optional filters
+   * Applies the same filters as getTickets (status, priority, assigned_to)
+   */
+  exportTicketsPdf(filters?: TicketFilters): Observable<Blob> {
+    console.log('📥 [TICKET SERVICE] Exporting tickets to PDF with filters:', filters);
+    let params = new HttpParams();
+
+    if (filters) {
+      Object.entries(filters).forEach(([key, value]) => {
+        if (value !== undefined && value !== null) {
+          params = params.set(key, value.toString());
+        }
+      });
+    }
+
+    return this.http.get(
+      `${this.apiUrl}/export/pdf`,
+      { params, responseType: 'blob' }
+    );
+  }
+
+  // Attachment Management Methods
+
+  /**
+   * Download attachment with original filename
+   * Forces browser to download the file
+   */
   downloadAttachment(attachmentId: number): Observable<Blob> {
     return this.http.get(`${this.apiUrl}/attachments/${attachmentId}`, { responseType: 'blob' });
   }
