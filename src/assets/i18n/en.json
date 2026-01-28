@@ -260,6 +260,7 @@
     "openTickets": "Open Tickets",
     "closedTickets": "Closed Tickets",
     "avgResponseTime": "Average Response Time",
+    "exportPdf": "Export PDF",
     "ticketsByStatus": "Tickets by Status",
     "ticketsByPriority": "Tickets by Priority",
     "recentActivity": "Recent Activity",

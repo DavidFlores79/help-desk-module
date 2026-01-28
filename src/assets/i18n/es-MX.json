@@ -260,6 +260,7 @@
     "openTickets": "Tickets Abiertos",
     "closedTickets": "Tickets Cerrados",
     "avgResponseTime": "Tiempo Promedio de Respuesta",
+    "exportPdf": "Exportar PDF",
     "ticketsByStatus": "Tickets por Estado",
     "ticketsByPriority": "Tickets por Prioridad",
     "recentActivity": "Actividad Reciente",

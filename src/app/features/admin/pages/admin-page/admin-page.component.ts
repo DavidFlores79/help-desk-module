@@ -136,6 +136,20 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           </div>
         </div>
 
+        <!-- Export Button -->
+        <div class="mb-4 sm:mb-6 flex justify-end">
+          <button
+            (click)="exportPdf()"
+            [disabled]="isLoading"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            {{ 'admin.exportPdf' | translate }}
+          </button>
+        </div>
+
         <!-- Tickets Table -->
         <div class="card overflow-hidden">
           @if (isLoading) {
@@ -481,6 +495,58 @@ export class AdminPageComponent implements OnInit {
       assigned_to: ''
     };
     this.loadTickets();
+  }
+
+  /**
+   * Export tickets to PDF with current filters
+   */
+  exportPdf(): void {
+    console.log('📥 [ADMIN] Exporting tickets to PDF with filters:', this.filters);
+    this.isLoading = true;
+
+    const filters = {
+      ...(this.filters.status && { status: this.filters.status }),
+      ...(this.filters.priority && { priority: this.filters.priority }),
+      ...(this.filters.assigned_to && { assigned_to: this.filters.assigned_to })
+    };
+
+    this.ticketService.exportTicketsPdf(filters).subscribe({
+      next: (blob) => {
+        console.log('✅ [ADMIN] PDF export successful, creating download');
+
+        // Create download link
+        const url = window.URL.createObjectURL(blob);
+        const link = document.createElement('a');
+        link.href = url;
+
+        // Generate filename with timestamp and filters
+        const timestamp = new Date().getTime();
+        let filename = `tickets-report-${timestamp}`;
+
+        // Add filter info to filename
+        if (filters.status) filename += `-${filters.status}`;
+        if (filters.priority) filename += `-${filters.priority}`;
+        if (filters.assigned_to) filename += `-user${filters.assigned_to}`;
+
+        link.download = `${filename}.pdf`;
+
+        // Trigger download
+        document.body.appendChild(link);
+        link.click();
+
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(link);
+
+        this.isLoading = false;
+        console.log('✅ [ADMIN] PDF downloaded successfully');
+      },
+      error: (error) => {
+        console.error('❌ [ADMIN] PDF export failed:', error);
+        alert('Failed to export PDF. Please try again.');
+        this.isLoading = false;
+      }
+    });
   }
 
   /**
