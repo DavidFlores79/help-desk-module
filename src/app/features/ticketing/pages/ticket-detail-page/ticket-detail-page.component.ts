@@ -87,12 +87,17 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
                     (change)="changeTicketStatus($event)"
                     [disabled]="ticket.status === 'closed'"
                     class="text-xs sm:text-sm px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
-                    <option value="open">🔓 Open</option>
-                    <option value="assigned">👤 Assigned</option>
-                    <option value="in_progress">⏳ In Progress</option>
-                    <option value="awaiting_user">⏸️ Awaiting User</option>
-                    <option value="resolved">✅ Resolved</option>
-                    <option value="closed">🔒 Closed</option>
+                    @if (ticket.status === 'resolved') {
+                      <option value="resolved">✅ Resolved</option>
+                      <option value="closed">🔒 Closed</option>
+                    } @else {
+                      <option value="open">🔓 Open</option>
+                      <option value="assigned">👤 Assigned</option>
+                      <option value="in_progress">⏳ In Progress</option>
+                      <option value="awaiting_user">⏸️ Awaiting User</option>
+                      <option value="resolved">✅ Resolved</option>
+                      <option value="closed">🔒 Closed</option>
+                    }
                   </select>
 
                   <!-- Priority Change Dropdown -->
