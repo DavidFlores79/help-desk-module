@@ -347,7 +347,7 @@ export class NewTicketPageComponent implements OnInit, OnDestroy {
 
   selectUser(user: User): void {
     this.selectedUser = user;
-    this.userSearchTerm = user.name;
+    this.userSearchTerm = ''; // Clear search term to avoid triggering search
     this.ticketForm.patchValue({ user_id: user.id.toString() });
     this.showUserDropdown = false;
     this.filteredUsers = [];
