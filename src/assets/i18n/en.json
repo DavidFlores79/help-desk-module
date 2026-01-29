@@ -144,7 +144,7 @@
     "ticketDeleted": "Ticket deleted successfully",
     "confirmDelete": "Are you sure you want to delete this ticket?",
     "confirmReopen": "Are you sure you want to reopen this ticket?",
-    "confirmClose": "⚠️ Warning: Once a ticket is closed, it cannot be reopened. Are you sure you want to close this ticket?",
+    "confirmClose": "Once a ticket is closed, it cannot be reopened. Are you sure you want to close this ticket?",
     "cannotChangeClosedStatus": "Cannot change status of closed tickets. Closed tickets cannot be reopened.",
     "cannotChangePriorityClosed": "Cannot change priority of closed tickets.",
     "cannotChangeCategoryClosed": "Cannot change category of closed tickets.",
