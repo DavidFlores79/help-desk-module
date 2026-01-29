@@ -182,17 +182,18 @@ export class TicketService {
     const formData = new FormData();
     formData.append('title', data.title);
     formData.append('description', data.description);
-    
+
     if (data.priority) formData.append('priority', data.priority);
     if (data.ticket_category_id) formData.append('ticket_category_id', data.ticket_category_id.toString());
     if (data.assignment_id) formData.append('assignment_id', data.assignment_id.toString());
-    
+    if (data.user_id) formData.append('user_id', data.user_id.toString());
+
     if (data.attachments) {
       data.attachments.forEach(file => {
         formData.append('attachments[]', file);
       });
     }
-    
+
     return formData;
   }
 

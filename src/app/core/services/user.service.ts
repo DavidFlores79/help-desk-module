@@ -107,6 +107,22 @@ export class UserService {
   }
 
   /**
+   * Search users by name with server-side filtering
+   * Uses the name parameter which matches against name, email, department, and employee_id
+   */
+  searchUsers(searchTerm: string, perPage: number = 20): Observable<ApiResponse<UserListResponse>> {
+    const filters: UserFilters = {
+      name: searchTerm,
+      status: 1, // Active users only
+      per_page: perPage,
+      sort_by: 'name',
+      sort_order: 'asc'
+    };
+
+    return this.getUsers(filters);
+  }
+
+  /**
    * @deprecated Use getAdminsAndSuperUsers() instead
    */
   getTechnicians(): Observable<ApiResponse<User[]>> {

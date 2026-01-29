@@ -158,7 +158,14 @@
     "titleRequired": "El título es requerido",
     "descriptionRequired": "La descripción es requerida",
     "priorityRequired": "La prioridad es requerida",
-    "categoryRequired": "La categoría es requerida"
+    "categoryRequired": "La categoría es requerida",
+    "createTicketFor": "Crear ticket para",
+    "selectUser": "Seleccionar usuario",
+    "searchUsers": "Buscar usuarios...",
+    "userRequired": "El usuario es requerido",
+    "ticketOwner": "Propietario del Ticket",
+    "typeMoreCharacters": "Escribe al menos 2 caracteres para buscar",
+    "noUsersFound": "No se encontraron usuarios"
   },
   "status": {
     "open": "Abierto",
