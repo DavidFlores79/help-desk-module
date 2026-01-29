@@ -123,7 +123,7 @@ import { AttachmentViewerComponent } from '../attachment-viewer/attachment-viewe
         }
       </div>
 
-      <!-- Add Response Form (if ticket is not closed/resolved) -->
+      <!-- Add Response Form (if ticket is not resolved or closed) -->
       @if (ticket && ticket.status !== 'closed' && ticket.status !== 'resolved') {
         <div class="border-t border-gray-200 bg-gray-50 p-6 relative z-50">
           <h3 class="text-lg font-semibold text-gray-900 mb-4">{{ translationService.instant('response.addResponse') }}</h3>
@@ -232,7 +232,7 @@ export class ResponsesModalComponent {
     }
 
     // Prevent responses on resolved or closed tickets
-    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
+    if (this.ticket.status === 'closed' || this.ticket.status === 'resolved') {
       this.responseError = this.translationService.instant('response.cannotAddResponse');
       return;
     }
