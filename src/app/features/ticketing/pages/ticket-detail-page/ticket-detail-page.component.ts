@@ -85,7 +85,7 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
                   <select
                     [value]="ticket.status"
                     (change)="changeTicketStatus($event)"
-                    [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
+                    [disabled]="ticket.status === 'closed'"
                     class="text-xs sm:text-sm px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
                     <option value="open">🔓 Open</option>
                     <option value="assigned">👤 Assigned</option>
@@ -99,7 +99,7 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
                   <select
                     [value]="ticket.priority"
                     (change)="changeTicketPriority($event)"
-                    [disabled]="ticket.status === 'resolved' || ticket.status === 'closed'"
+                    [disabled]="ticket.status === 'closed'"
                     class="text-xs sm:text-sm px-2 sm:px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent disabled:bg-gray-100 disabled:cursor-not-allowed disabled:opacity-60">
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -124,7 +124,7 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
               }
               <div>
                 <p class="text-xs sm:text-sm text-gray-500 mb-1">Category</p>
-                @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
+                @if (authService.isAdmin() && ticket.status !== 'closed') {
                   <select
                     [(ngModel)]="selectedCategoryId"
                     (ngModelChange)="onCategoryChange($event)"
@@ -148,7 +148,7 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
                   <p class="text-xs sm:text-sm font-medium truncate flex-1">
                     {{ getAssignedToName() }}
                   </p>
-                  @if (authService.isAdmin() && ticket.status !== 'resolved' && ticket.status !== 'closed') {
+                  @if (authService.isAdmin() && ticket.status !== 'closed') {
                     <button
                       (click)="openAssignModal()"
                       class="text-xs text-primary-600 hover:text-primary-700 underline whitespace-nowrap"
@@ -479,8 +479,8 @@ export class TicketDetailPageComponent implements OnInit {
 
   canReopenTicket(): boolean {
     if (!this.ticket) return false;
-    // Can reopen if ticket is resolved or closed (API spec line 605-608)
-    return this.ticket.status === 'resolved' || this.ticket.status === 'closed';
+    // Can only reopen if ticket is resolved. Closed tickets cannot be reopened
+    return this.ticket.status === 'resolved';
   }
 
   canDeleteTicket(): boolean {
@@ -536,9 +536,9 @@ export class TicketDetailPageComponent implements OnInit {
   changeTicketStatus(event: Event): void {
     if (!this.ticket || !this.authService.isAdmin()) return;
 
-    // Prevent status changes on resolved or closed tickets
-    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      this.errorMessage = 'Cannot change status of resolved or closed tickets. Please reopen the ticket first.';
+    // Prevent status changes on closed tickets
+    if (this.ticket.status === 'closed') {
+      this.errorMessage = this.translationService.instant('ticket.cannotChangeClosedStatus');
       return;
     }
 
@@ -546,6 +546,15 @@ export class TicketDetailPageComponent implements OnInit {
 
     // Don't do anything if status hasn't changed
     if (newStatus === this.ticket.status) return;
+
+    // Show warning when closing a ticket
+    if (newStatus === 'closed') {
+      if (!confirm(this.translationService.instant('ticket.confirmClose'))) {
+        // Reload to revert the dropdown
+        this.loadTicket(this.ticket.id);
+        return;
+      }
+    }
 
     this.isChangingStatus = true;
 
@@ -567,9 +576,9 @@ export class TicketDetailPageComponent implements OnInit {
   changeTicketPriority(event: Event): void {
     if (!this.ticket || !this.authService.isAdmin()) return;
 
-    // Prevent priority changes on resolved or closed tickets
-    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      this.errorMessage = 'Cannot change priority of resolved or closed tickets. Please reopen the ticket first.';
+    // Prevent priority changes on closed tickets
+    if (this.ticket.status === 'closed') {
+      this.errorMessage = this.translationService.instant('ticket.cannotChangePriorityClosed');
       return;
     }
 
@@ -598,9 +607,9 @@ export class TicketDetailPageComponent implements OnInit {
   onCategoryChange(newCategoryId: number | string): void {
     if (!this.ticket || !this.authService.isAdmin()) return;
 
-    // Prevent changes on resolved or closed tickets
-    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      this.errorMessage = 'Cannot change category of resolved or closed tickets. Please reopen the ticket first.';
+    // Prevent changes on closed tickets
+    if (this.ticket.status === 'closed') {
+      this.errorMessage = this.translationService.instant('ticket.cannotChangeCategoryClosed');
       // Reset to original value
       const category = this.ticket.ticketCategory || this.ticket.ticket_category;
       this.selectedCategoryId = category ? category.id : '';
@@ -643,9 +652,9 @@ export class TicketDetailPageComponent implements OnInit {
   assignTicket(): void {
     if (!this.ticket || !this.assignForm.valid || !this.authService.isAdmin()) return;
 
-    // Prevent assignment changes on resolved or closed tickets
-    if (this.ticket.status === 'resolved' || this.ticket.status === 'closed') {
-      this.errorMessage = 'Cannot assign resolved or closed tickets. Please reopen the ticket first.';
+    // Prevent assignment changes on closed tickets
+    if (this.ticket.status === 'closed') {
+      this.errorMessage = this.translationService.instant('ticket.cannotAssignClosed');
       this.closeAssignModal();
       return;
     }
