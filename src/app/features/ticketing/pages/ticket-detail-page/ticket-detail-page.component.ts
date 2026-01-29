@@ -15,6 +15,7 @@ import { PriorityBadgePipe } from '../../../../shared/pipes/priority-badge.pipe'
 import { ResponsesModalComponent } from '../../../../shared/components/responses-modal/responses-modal.component';
 import { AttachmentViewerComponent } from '../../../../shared/components/attachment-viewer/attachment-viewer.component';
 import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolution-time-pipe';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 
 @Component({
   selector: 'app-ticket-detail-page',
@@ -30,7 +31,8 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
     PriorityBadgePipe,
     ResponsesModalComponent,
     AttachmentViewerComponent,
-    FormatResolutionTimePipe
+    FormatResolutionTimePipe,
+    ConfirmationModalComponent
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -358,6 +360,40 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
       (closeModal)="closeResponsesModal()"
       (responseAdded)="onResponseAdded()"
     ></app-responses-modal>
+
+    <!-- Confirmation Modals -->
+    <app-confirmation-modal
+      [isOpen]="showCloseConfirmation"
+      [title]="translationService.instant('app.warning')"
+      [message]="translationService.instant('ticket.confirmClose')"
+      [confirmText]="translationService.instant('ticket.closeTicket')"
+      [cancelText]="translationService.instant('app.cancel')"
+      [type]="'warning'"
+      (confirmed)="confirmCloseTicket()"
+      (cancelled)="cancelCloseTicket()"
+    ></app-confirmation-modal>
+
+    <app-confirmation-modal
+      [isOpen]="showReopenConfirmation"
+      [title]="translationService.instant('ticket.reopenTicket')"
+      [message]="translationService.instant('ticket.confirmReopen')"
+      [confirmText]="translationService.instant('ticket.reopenTicket')"
+      [cancelText]="translationService.instant('app.cancel')"
+      [type]="'info'"
+      (confirmed)="confirmReopenTicket()"
+      (cancelled)="showReopenConfirmation = false"
+    ></app-confirmation-modal>
+
+    <app-confirmation-modal
+      [isOpen]="showDeleteConfirmation"
+      [title]="translationService.instant('ticket.deleteTicket')"
+      [message]="translationService.instant('ticket.confirmDelete')"
+      [confirmText]="translationService.instant('app.delete')"
+      [cancelText]="translationService.instant('app.cancel')"
+      [type]="'danger'"
+      (confirmed)="confirmDeleteTicket()"
+      (cancelled)="showDeleteConfirmation = false"
+    ></app-confirmation-modal>
   `
 })
 export class TicketDetailPageComponent implements OnInit {
@@ -384,6 +420,10 @@ export class TicketDetailPageComponent implements OnInit {
   isAssigning = false;
   showAssignModal = false;
   showResponsesModal = false;
+  showCloseConfirmation = false;
+  showReopenConfirmation = false;
+  showDeleteConfirmation = false;
+  pendingStatusChange: string | null = null;
 
   assignForm = this.fb.group({
     assigned_to: [null as number | null, Validators.required]
@@ -498,11 +538,13 @@ export class TicketDetailPageComponent implements OnInit {
 
   reopenTicket(): void {
     if (!this.ticket || !this.canReopenTicket()) return;
+    this.showReopenConfirmation = true;
+  }
 
-    if (!confirm('Are you sure you want to reopen this ticket?')) {
-      return;
-    }
+  confirmReopenTicket(): void {
+    if (!this.ticket) return;
 
+    this.showReopenConfirmation = false;
     this.isReopening = true;
 
     this.ticketService.reopenTicket(this.ticket.id).subscribe({
@@ -519,11 +561,13 @@ export class TicketDetailPageComponent implements OnInit {
 
   deleteTicket(): void {
     if (!this.ticket || !this.canDeleteTicket()) return;
+    this.showDeleteConfirmation = true;
+  }
 
-    if (!confirm('Are you sure you want to delete this ticket? This action cannot be undone.')) {
-      return;
-    }
+  confirmDeleteTicket(): void {
+    if (!this.ticket) return;
 
+    this.showDeleteConfirmation = false;
     this.isDeleting = true;
 
     this.ticketService.deleteTicket(this.ticket.id).subscribe({
@@ -554,12 +598,33 @@ export class TicketDetailPageComponent implements OnInit {
 
     // Show warning when closing a ticket
     if (newStatus === 'closed') {
-      if (!confirm(this.translationService.instant('ticket.confirmClose'))) {
-        // Reload to revert the dropdown
-        this.loadTicket(this.ticket.id);
-        return;
-      }
+      this.pendingStatusChange = newStatus;
+      this.showCloseConfirmation = true;
+      return;
     }
+
+    // For other status changes, proceed directly
+    this.performStatusChange(newStatus);
+  }
+
+  confirmCloseTicket(): void {
+    if (!this.pendingStatusChange) return;
+    this.showCloseConfirmation = false;
+    this.performStatusChange(this.pendingStatusChange);
+    this.pendingStatusChange = null;
+  }
+
+  cancelCloseTicket(): void {
+    this.showCloseConfirmation = false;
+    this.pendingStatusChange = null;
+    // Reload to revert the dropdown
+    if (this.ticket) {
+      this.loadTicket(this.ticket.id);
+    }
+  }
+
+  private performStatusChange(newStatus: string): void {
+    if (!this.ticket) return;
 
     this.isChangingStatus = true;
 
