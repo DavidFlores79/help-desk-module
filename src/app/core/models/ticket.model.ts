@@ -134,6 +134,7 @@ export interface CreateTicketDto {
   assignment_id?: number;
   priority?: TicketPriority;
   attachments?: File[];
+  user_id?: number; // For admins to create tickets on behalf of users
 }
 
 export interface UpdateTicketDto {
