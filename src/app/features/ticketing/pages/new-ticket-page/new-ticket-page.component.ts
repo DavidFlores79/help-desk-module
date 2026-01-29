@@ -1,20 +1,26 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, inject, OnInit, OnDestroy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
+import { FormBuilder, ReactiveFormsModule, Validators, FormsModule } from '@angular/forms';
+import { Subject } from 'rxjs';
+import { debounceTime, distinctUntilChanged, switchMap } from 'rxjs/operators';
 import { TicketService } from '../../../../core/services/ticket.service';
 import { TicketCategoryService } from '../../../../core/services/ticket-category.service';
+import { UserService } from '../../../../core/services/user.service';
+import { AuthService } from '../../../../core/services/auth.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { FileUploadComponent } from '../../../../shared/components/file-upload/file-upload.component';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import { User } from '../../../../core/models/ticket.model';
 
 @Component({
   selector: 'app-new-ticket-page',
   standalone: true,
   imports: [
-    CommonModule, 
-    RouterModule, 
+    CommonModule,
+    RouterModule,
     ReactiveFormsModule,
+    FormsModule,
     HeaderComponent,
     FileUploadComponent,
     TranslatePipe
@@ -37,6 +43,85 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-4 sm:mb-6">{{ 'ticket.createNewTicket' | translate }}</h1>
 
           <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
+            <!-- User Selection (Admins Only) -->
+            @if (isAdmin) {
+              <div class="mb-4">
+                <label for="user_id" class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ 'ticket.ticketOwner' | translate }} <span class="text-danger-600">*</span>
+                </label>
+                <div class="relative">
+                  <div class="relative">
+                    <input
+                      id="user-search"
+                      type="text"
+                      [(ngModel)]="userSearchTerm"
+                      [ngModelOptions]="{standalone: true}"
+                      (input)="onUserSearch()"
+                      (focus)="onUserSearchFocus()"
+                      class="input-field"
+                      [class.border-danger-500]="ticketForm.get('user_id')?.invalid && ticketForm.get('user_id')?.touched"
+                      [placeholder]="'ticket.searchUsers' | translate"
+                    />
+                    @if (isSearchingUsers) {
+                      <div class="absolute right-3 top-1/2 -translate-y-1/2">
+                        <svg class="animate-spin h-5 w-5 text-primary-600" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                          <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
+                          <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                        </svg>
+                      </div>
+                    }
+                  </div>
+                  @if (userSearchTerm && userSearchTerm.trim().length > 0 && userSearchTerm.trim().length < 2) {
+                    <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg px-4 py-3">
+                      <p class="text-sm text-gray-500">{{ 'ticket.typeMoreCharacters' | translate }}</p>
+                    </div>
+                  }
+                  @if (showUserDropdown && filteredUsers.length > 0) {
+                    <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg max-h-60 overflow-auto">
+                      @for (user of filteredUsers; track user.id) {
+                        <button
+                          type="button"
+                          (click)="selectUser(user)"
+                          class="w-full text-left px-4 py-2 hover:bg-gray-100 focus:bg-gray-100 focus:outline-none"
+                        >
+                          <div class="font-medium">{{ user.name }}</div>
+                          <div class="text-sm text-gray-500">{{ user.email }}</div>
+                          @if (user.department) {
+                            <div class="text-xs text-gray-400">{{ user.department }}</div>
+                          }
+                        </button>
+                      }
+                    </div>
+                  }
+                  @if (userSearchTerm && userSearchTerm.trim().length >= 2 && !isSearchingUsers && filteredUsers.length === 0 && showUserDropdown === false) {
+                    <div class="absolute z-10 w-full mt-1 bg-white border border-gray-300 rounded-md shadow-lg px-4 py-3">
+                      <p class="text-sm text-gray-500">{{ 'ticket.noUsersFound' | translate }}</p>
+                    </div>
+                  }
+                  @if (selectedUser) {
+                    <div class="mt-2 p-3 bg-primary-50 border border-primary-200 rounded-md flex items-center justify-between">
+                      <div>
+                        <div class="font-medium text-primary-900">{{ selectedUser.name }}</div>
+                        <div class="text-sm text-primary-700">{{ selectedUser.email }}</div>
+                      </div>
+                      <button
+                        type="button"
+                        (click)="clearUserSelection()"
+                        class="text-primary-600 hover:text-primary-800"
+                      >
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                        </svg>
+                      </button>
+                    </div>
+                  }
+                </div>
+                @if (ticketForm.get('user_id')?.invalid && ticketForm.get('user_id')?.touched) {
+                  <p class="mt-1 text-sm text-danger-600">{{ 'ticket.userRequired' | translate }}</p>
+                }
+              </div>
+            }
+
             <!-- Title -->
             <div class="mb-4">
               <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
@@ -156,10 +241,12 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
     </div>
   `
 })
-export class NewTicketPageComponent implements OnInit {
+export class NewTicketPageComponent implements OnInit, OnDestroy {
   private fb = inject(FormBuilder);
   private ticketService = inject(TicketService);
   private ticketCategoryService = inject(TicketCategoryService);
+  private userService = inject(UserService);
+  private authService = inject(AuthService);
   private router = inject(Router);
 
   ticketForm = this.fb.group({
@@ -167,15 +254,41 @@ export class NewTicketPageComponent implements OnInit {
     description: ['', Validators.required],
     priority: ['medium', Validators.required],
     ticket_category_id: [''],
-    attachments: [[]]
+    attachments: [[]],
+    user_id: ['']
   });
 
   ticketCategories: any[] = [];
   isSubmitting = false;
   errorMessage = '';
 
+  // Admin user selection
+  isAdmin = false;
+  filteredUsers: User[] = [];
+  selectedUser: User | null = null;
+  userSearchTerm = '';
+  showUserDropdown = false;
+  isSearchingUsers = false;
+
+  // Search subject for debouncing
+  private searchSubject$ = new Subject<string>();
+  private destroy$ = new Subject<void>();
+
   ngOnInit(): void {
+    this.isAdmin = this.authService.isAdmin();
+
+    // Set user_id as required for admins
+    if (this.isAdmin) {
+      this.ticketForm.get('user_id')?.setValidators([Validators.required]);
+      this.setupUserSearch();
+    }
+
     this.loadTicketCategories();
+  }
+
+  ngOnDestroy(): void {
+    this.destroy$.next();
+    this.destroy$.complete();
   }
 
   loadTicketCategories(): void {
@@ -185,6 +298,67 @@ export class NewTicketPageComponent implements OnInit {
       },
       error: () => {}
     });
+  }
+
+  setupUserSearch(): void {
+    // Setup debounced search with server-side filtering
+    this.searchSubject$.pipe(
+      debounceTime(300), // Wait 300ms after user stops typing
+      distinctUntilChanged(), // Only emit if value has changed
+      switchMap(searchTerm => {
+        const trimmedTerm = searchTerm.trim();
+
+        if (!trimmedTerm || trimmedTerm.length < 2) {
+          this.filteredUsers = [];
+          this.showUserDropdown = false;
+          this.isSearchingUsers = false;
+          return [];
+        }
+
+        this.isSearchingUsers = true;
+        return this.userService.searchUsers(trimmedTerm, 15);
+      })
+    ).subscribe({
+      next: (response) => {
+        this.filteredUsers = response.data?.data || [];
+        this.showUserDropdown = this.filteredUsers.length > 0;
+        this.isSearchingUsers = false;
+      },
+      error: (error) => {
+        console.error('Failed to search users:', error);
+        this.filteredUsers = [];
+        this.showUserDropdown = false;
+        this.isSearchingUsers = false;
+      }
+    });
+  }
+
+  onUserSearch(): void {
+    // Emit search term to the debounced subject
+    this.searchSubject$.next(this.userSearchTerm);
+  }
+
+  onUserSearchFocus(): void {
+    // Show dropdown if there are already filtered users
+    if (this.filteredUsers.length > 0) {
+      this.showUserDropdown = true;
+    }
+  }
+
+  selectUser(user: User): void {
+    this.selectedUser = user;
+    this.userSearchTerm = user.name;
+    this.ticketForm.patchValue({ user_id: user.id.toString() });
+    this.showUserDropdown = false;
+    this.filteredUsers = [];
+  }
+
+  clearUserSelection(): void {
+    this.selectedUser = null;
+    this.userSearchTerm = '';
+    this.ticketForm.patchValue({ user_id: '' });
+    this.filteredUsers = [];
+    this.showUserDropdown = false;
   }
 
   onSubmit(): void {
@@ -201,6 +375,11 @@ export class NewTicketPageComponent implements OnInit {
 
       if (formValue.ticket_category_id) {
         formData.append('ticket_category_id', formValue.ticket_category_id);
+      }
+
+      // Add user_id if admin is creating ticket for another user
+      if (this.isAdmin && formValue.user_id) {
+        formData.append('user_id', formValue.user_id);
       }
 
       const files = formValue.attachments as any;

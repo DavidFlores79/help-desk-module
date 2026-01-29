@@ -158,7 +158,14 @@
     "titleRequired": "Title is required",
     "descriptionRequired": "Description is required",
     "priorityRequired": "Priority is required",
-    "categoryRequired": "Category is required"
+    "categoryRequired": "Category is required",
+    "createTicketFor": "Create ticket for",
+    "selectUser": "Select user",
+    "searchUsers": "Search users...",
+    "userRequired": "User is required",
+    "ticketOwner": "Ticket Owner",
+    "typeMoreCharacters": "Type at least 2 characters to search",
+    "noUsersFound": "No users found"
   },
   "status": {
     "open": "Open",
