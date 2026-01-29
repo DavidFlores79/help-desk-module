@@ -374,7 +374,7 @@ export class AdminPageComponent implements OnInit {
     const userId = (event.target as HTMLSelectElement).value;
     if (!userId) return;
 
-    this.ticketService.assignTicket(ticket.id, { user_id: +userId }).subscribe({
+    this.ticketService.assignTicket(ticket.id, { assigned_to: +userId }).subscribe({
       next: () => {
         this.loadTickets();
       },
