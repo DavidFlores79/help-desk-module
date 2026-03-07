@@ -77,20 +77,13 @@ export class AuthService {
     this.router.navigate(['/auth/login']);
   }
 
-  /**
-   * Normalize user data from API to include computed role field
-   * Maps my_profile.name to internal role
-   */
   private normalizeUser(user: any): AuthUser {
     let role: UserRole = 'user';
 
-    if (user.my_profile && user.my_profile.name) {
-      const profileName = user.my_profile.name.toLowerCase();
-      if (profileName === 'superuser') {
-        role = 'superuser';
-      } else if (profileName === 'administrador' || profileName === 'admin') {
-        role = 'admin';
-      }
+    if (user.my_profile?.is_superuser === true) {
+      role = 'superuser';
+    } else if (user.my_profile?.is_admin === true) {
+      role = 'admin';
     }
 
     return { ...user, role };
@@ -132,45 +125,13 @@ export class AuthService {
   isAdmin(): boolean {
     const user = this.getCurrentUser();
     if (!user) return false;
-
-    // Check computed role field (set by normalizeUser)
-    if (user.role) {
-      return user.role === 'admin' || user.role === 'superuser';
-    }
-
-    // Fallback: check my_profile.name directly
-    if (user.my_profile && user.my_profile.name) {
-      const profileName = user.my_profile.name.toLowerCase();
-      return profileName === 'administrador' || profileName === 'admin' || profileName === 'superuser';
-    }
-
-    // Check for permissions array if it exists
-    if (user.permissions && Array.isArray(user.permissions)) {
-      return user.permissions.includes('admin') || user.permissions.includes('superuser');
-    }
-
-    return false;
+    return user.my_profile?.is_admin === true || user.my_profile?.is_superuser === true;
   }
 
   isSuperUser(): boolean {
     const user = this.getCurrentUser();
     if (!user) return false;
-    
-    // Check computed role field
-    if (user.role) {
-      return user.role === 'superuser';
-    }
-    
-    // Fallback: check my_profile.name directly
-    if (user.my_profile && user.my_profile.name) {
-      return user.my_profile.name.toLowerCase() === 'superuser';
-    }
-    
-    if (user.permissions && Array.isArray(user.permissions)) {
-      return user.permissions.includes('superuser');
-    }
-    
-    return false;
+    return user.my_profile?.is_superuser === true;
   }
 
   hasRole(role: string | string[]): boolean {
@@ -178,27 +139,7 @@ export class AuthService {
     if (!user) return false;
 
     const roles = Array.isArray(role) ? role : [role];
-
-    // Check computed role field
-    if (user.role && roles.includes(user.role)) {
-      return true;
-    }
-
-    // Check my_profile.name
-    if (user.my_profile && user.my_profile.name) {
-      const profileName = user.my_profile.name.toLowerCase();
-      if (roles.some(r => r.toLowerCase() === profileName ||
-                         (r === 'admin' && profileName === 'administrador'))) {
-        return true;
-      }
-    }
-
-    // Check permissions array
-    if (user.permissions && Array.isArray(user.permissions)) {
-      return roles.some(r => user.permissions!.includes(r));
-    }
-
-    return false;
+    return user.role !== undefined && roles.includes(user.role);
   }
 
   /**

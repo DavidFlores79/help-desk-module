@@ -13,8 +13,10 @@ export interface LoginResponse {
 
 export interface ProfileType {
   id: number;
-  name: string; // 'Administrador', 'Usuario', 'SuperUser'
+  name: string;
   description?: string;
+  is_admin?: boolean;
+  is_superuser?: boolean;
 }
 
 export interface AuthUser {
