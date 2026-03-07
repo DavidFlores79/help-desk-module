@@ -1,5 +1,15 @@
 # Help Desk Module - AI Agent Instructions
 
+## Commit & PR Rules
+
+> **STRICTLY FORBIDDEN**: Any commit message, PR title, PR description, or code comment must **never** reference AI tools, AI assistants, or AI companies. This includes but is not limited to:
+> - Anthropic, Claude, Claude Code, or any Claude product
+> - GitHub Copilot, ChatGPT, OpenAI, Gemini, or any other AI assistant
+> - Phrases like "Generated with...", "AI-assisted", "Co-authored by AI"
+> - `Co-Authored-By:` trailer lines pointing to any AI
+>
+> Keep all commit messages and PRs clean, professional, and written as if authored entirely by a human developer.
+
 ## Project Overview
 Enterprise help desk ticketing system built with **Angular 20 (standalone components)** and **TailwindCSS**. Uses Clean Architecture with feature-based organization and functional route guards/interceptors.
 

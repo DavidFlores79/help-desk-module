@@ -94,7 +94,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
         <!-- Filters -->
         <div class="card mb-4 sm:mb-6">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
             <div>
               <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.status' | translate }}</label>
               <select [(ngModel)]="filters.status" (change)="loadTickets()" class="input-field text-sm">
@@ -130,10 +130,35 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
               </select>
             </div>
 
+            <div>
+              <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.period' | translate }}</label>
+              <select [(ngModel)]="filters.period" (change)="onPeriodChange()" class="input-field text-sm">
+                <option value="">{{ 'filter.allTime' | translate }}</option>
+                <option value="this_month">{{ 'filter.thisMonth' | translate }}</option>
+                <option value="last_month">{{ 'filter.lastMonth' | translate }}</option>
+                <option value="this_semester">{{ 'filter.thisSemester' | translate }}</option>
+                <option value="last_semester">{{ 'filter.lastSemester' | translate }}</option>
+                <option value="custom">{{ 'filter.customRange' | translate }}</option>
+              </select>
+            </div>
+
             <div class="flex items-end">
-              <button (click)="clearFilters()" class="btn-secondary">{{ 'filter.clearFilters' | translate }}</button>
+              <button (click)="clearFilters()" class="btn-secondary w-full">{{ 'filter.clearFilters' | translate }}</button>
             </div>
           </div>
+
+          @if (filters.period === 'custom') {
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-4 pt-4 border-t border-gray-200">
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.dateFrom' | translate }}</label>
+                <input type="date" [(ngModel)]="filters.date_from" (change)="loadTickets()" class="input-field text-sm" />
+              </div>
+              <div>
+                <label class="block text-sm font-medium text-gray-700 mb-1">{{ 'filter.dateTo' | translate }}</label>
+                <input type="date" [(ngModel)]="filters.date_to" (change)="loadTickets()" class="input-field text-sm" />
+              </div>
+            </div>
+          }
         </div>
 
         <!-- Export Button -->
@@ -297,7 +322,10 @@ export class AdminPageComponent implements OnInit {
   filters: any = {
     status: '',
     priority: '',
-    assigned_to: ''
+    assigned_to: '',
+    period: '',
+    date_from: '',
+    date_to: ''
   };
   stats = {
     total: 0,
@@ -340,7 +368,9 @@ export class AdminPageComponent implements OnInit {
     const filters = {
       ...(this.filters.status && { status: this.filters.status }),
       ...(this.filters.priority && { priority: this.filters.priority }),
-      ...(this.filters.assigned_to && { assigned_to: this.filters.assigned_to })
+      ...(this.filters.assigned_to && { assigned_to: this.filters.assigned_to }),
+      ...(this.filters.date_from && { date_from: this.filters.date_from }),
+      ...(this.filters.date_to && { date_to: this.filters.date_to })
     };
 
     this.ticketService.getTickets(filters).subscribe({
@@ -462,9 +492,64 @@ export class AdminPageComponent implements OnInit {
     this.filters = {
       status: '',
       priority: '',
-      assigned_to: ''
+      assigned_to: '',
+      period: '',
+      date_from: '',
+      date_to: ''
     };
     this.loadTickets();
+  }
+
+  onPeriodChange(): void {
+    const now = new Date();
+    const year = now.getFullYear();
+    const month = now.getMonth(); // 0-indexed
+
+    switch (this.filters.period) {
+      case 'this_month':
+        this.filters.date_from = this.formatDate(new Date(year, month, 1));
+        this.filters.date_to = this.formatDate(now);
+        break;
+      case 'last_month': {
+        const lastMonthYear = month === 0 ? year - 1 : year;
+        const lastMonth = month === 0 ? 11 : month - 1;
+        this.filters.date_from = this.formatDate(new Date(lastMonthYear, lastMonth, 1));
+        this.filters.date_to = this.formatDate(new Date(year, month, 0));
+        break;
+      }
+      case 'this_semester':
+        if (month < 6) {
+          this.filters.date_from = `${year}-01-01`;
+          this.filters.date_to = `${year}-06-30`;
+        } else {
+          this.filters.date_from = `${year}-07-01`;
+          this.filters.date_to = `${year}-12-31`;
+        }
+        break;
+      case 'last_semester':
+        if (month < 6) {
+          this.filters.date_from = `${year - 1}-07-01`;
+          this.filters.date_to = `${year - 1}-12-31`;
+        } else {
+          this.filters.date_from = `${year}-01-01`;
+          this.filters.date_to = `${year}-06-30`;
+        }
+        break;
+      default:
+        this.filters.date_from = '';
+        this.filters.date_to = '';
+    }
+
+    if (this.filters.period !== 'custom') {
+      this.loadTickets();
+    }
+  }
+
+  private formatDate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   /**
@@ -477,7 +562,9 @@ export class AdminPageComponent implements OnInit {
     const filters = {
       ...(this.filters.status && { status: this.filters.status }),
       ...(this.filters.priority && { priority: this.filters.priority }),
-      ...(this.filters.assigned_to && { assigned_to: this.filters.assigned_to })
+      ...(this.filters.assigned_to && { assigned_to: this.filters.assigned_to }),
+      ...(this.filters.date_from && { date_from: this.filters.date_from }),
+      ...(this.filters.date_to && { date_to: this.filters.date_to })
     };
 
     this.ticketService.exportTicketsPdf(filters).subscribe({
@@ -497,6 +584,9 @@ export class AdminPageComponent implements OnInit {
         if (filters.status) filename += `-${filters.status}`;
         if (filters.priority) filename += `-${filters.priority}`;
         if (filters.assigned_to) filename += `-user${filters.assigned_to}`;
+        if (this.filters.period && this.filters.period !== 'custom') filename += `-${this.filters.period}`;
+        if (filters.date_from) filename += `-from${filters.date_from}`;
+        if (filters.date_to) filename += `-to${filters.date_to}`;
 
         link.download = `${filename}.pdf`;
 

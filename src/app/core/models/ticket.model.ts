@@ -162,4 +162,6 @@ export interface TicketFilters {
   priority?: TicketPriority;
   assigned_to?: number;
   page?: number;
+  date_from?: string;
+  date_to?: string;
 }
