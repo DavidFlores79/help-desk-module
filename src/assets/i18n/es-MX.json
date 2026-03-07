@@ -253,7 +253,16 @@
     "allPriorities": "Todas las Prioridades",
     "allTechnicians": "Todos los Técnicos",
     "noResults": "No se encontraron resultados",
-    "showing": "Mostrando {{count}} de {{total}} tickets"
+    "showing": "Mostrando {{count}} de {{total}} tickets",
+    "period": "Período",
+    "allTime": "Todo el tiempo",
+    "thisMonth": "Este mes",
+    "lastMonth": "Mes anterior",
+    "thisSemester": "Semestre actual",
+    "lastSemester": "Semestre anterior",
+    "customRange": "Rango personalizado",
+    "dateFrom": "Desde",
+    "dateTo": "Hasta"
   },
   "admin": {
     "admin": "Administración",

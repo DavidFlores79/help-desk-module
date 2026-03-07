@@ -253,7 +253,16 @@
     "allPriorities": "All Priorities",
     "allTechnicians": "All Technicians",
     "noResults": "No results found",
-    "showing": "Showing {{count}} of {{total}} tickets"
+    "showing": "Showing {{count}} of {{total}} tickets",
+    "period": "Period",
+    "allTime": "All Time",
+    "thisMonth": "This Month",
+    "lastMonth": "Last Month",
+    "thisSemester": "This Semester",
+    "lastSemester": "Last Semester",
+    "customRange": "Custom Range",
+    "dateFrom": "From Date",
+    "dateTo": "To Date"
   },
   "admin": {
     "admin": "Administration",

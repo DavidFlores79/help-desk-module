@@ -27,7 +27,13 @@ npx ng test --include='**/ticket.service.spec.ts'
 
 ## Commit & PR Rules
 
-**Never include** AI tool attribution in commits or PRs — no "Generated with Claude Code", no Anthropic/Claude references, no `Co-Authored-By: Claude` lines. Keep commit messages clean.
+> **STRICTLY FORBIDDEN**: Any commit message, PR title, PR description, or code comment must **never** reference AI tools, AI assistants, or AI companies. This includes but is not limited to:
+> - Anthropic, Claude, Claude Code, or any Claude product
+> - GitHub Copilot, ChatGPT, OpenAI, Gemini, or any other AI assistant
+> - Phrases like "Generated with...", "AI-assisted", "Co-authored by AI"
+> - `Co-Authored-By:` trailer lines pointing to any AI
+>
+> Keep all commit messages and PRs clean, professional, and written as if authored entirely by a human developer.
 
 ## Development Workflow (Custom Slash Commands)
 
