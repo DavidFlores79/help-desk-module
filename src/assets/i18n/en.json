@@ -318,7 +318,30 @@
     "onlyAdmins": "Only administrators and superusers can change the language",
     "preferences": "Preferences",
     "saveChanges": "Save Changes",
-    "changesSaved": "Changes saved successfully"
+    "changesSaved": "Changes saved successfully",
+    "notificationSettings": {
+      "onlySuperusers": "Only superusers can change email notifications.",
+      "ticketCreated": "New ticket → notify support",
+      "ticketCreatedDescription": "Email the support team when a ticket is created.",
+      "recipients": "Recipients",
+      "allAdmins": "All active administrators",
+      "creator": "The administrator who registered it on behalf of a user",
+      "extraEmails": "Extra addresses (comma separated, up to 10)",
+      "invalidEmail": "One or more email addresses are not valid.",
+      "tooManyEmails": "You can add at most 10 addresses.",
+      "noRecipients": "Nobody will receive this alert: choose at least one recipient or turn it off.",
+      "ownerExcluded": "The ticket owner never gets this alert; they get their own confirmation.",
+      "responseNotifyOwner": "Support reply → notify the owner",
+      "responseNotifyOwnerDescription": "Email the owner when support replies to their ticket. Internal notes are never emailed.",
+      "ownerReplyNotifySupport": "Owner activity → notify support",
+      "ownerReplyNotifySupportDescription": "When the owner replies or reopens their ticket, email the assigned technician (or every administrator if it is unassigned).",
+      "statusChangeNotifyOwner": "Status change → notify the owner",
+      "statusChangeNotifyOwnerDescription": "Email the owner when their ticket changes status (assigned, in progress, awaiting user, closed or reopened).",
+      "alwaysSent": "Always sent: the owner's confirmation when they create a ticket, and the notice when their ticket is resolved.",
+      "saved": "Notification settings saved",
+      "saveError": "Could not save the notification settings",
+      "loadError": "Could not load the notification settings"
+    }
   },
   "validation": {
     "required": "This field is required",
