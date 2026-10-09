@@ -318,7 +318,30 @@
     "onlyAdmins": "Solo administradores y superusuarios pueden cambiar el idioma",
     "preferences": "Preferencias",
     "saveChanges": "Guardar Cambios",
-    "changesSaved": "Cambios guardados exitosamente"
+    "changesSaved": "Cambios guardados exitosamente",
+    "notificationSettings": {
+      "onlySuperusers": "Solo los superusuarios pueden cambiar las notificaciones por correo.",
+      "ticketCreated": "Nuevo ticket → avisar a soporte",
+      "ticketCreatedDescription": "Envía un correo al equipo de soporte cuando se crea un ticket.",
+      "recipients": "Destinatarios",
+      "allAdmins": "Todos los administradores activos",
+      "creator": "El administrador que lo registró a nombre de un usuario",
+      "extraEmails": "Correos adicionales (separados por coma, máximo 10)",
+      "invalidEmail": "Uno o más correos no son válidos.",
+      "tooManyEmails": "Puedes agregar como máximo 10 correos.",
+      "noRecipients": "Nadie recibirá este aviso: elige al menos un destinatario o desactívalo.",
+      "ownerExcluded": "El solicitante nunca recibe este aviso, porque ya recibe su propia confirmación.",
+      "responseNotifyOwner": "Respuesta de soporte → avisar al solicitante",
+      "responseNotifyOwnerDescription": "Envía un correo al solicitante cuando soporte responde su ticket. Las notas internas nunca se envían.",
+      "ownerReplyNotifySupport": "Actividad del solicitante → avisar a soporte",
+      "ownerReplyNotifySupportDescription": "Cuando el solicitante responde o reabre su ticket, avisa al técnico asignado (o a todos los administradores si no está asignado).",
+      "statusChangeNotifyOwner": "Cambio de estado → avisar al solicitante",
+      "statusChangeNotifyOwnerDescription": "Envía un correo al solicitante cuando su ticket cambia de estado (asignado, en progreso, esperando usuario, cerrado o reabierto).",
+      "alwaysSent": "Siempre se envían: la confirmación al solicitante cuando crea un ticket y el aviso cuando su ticket se resuelve.",
+      "saved": "Configuración de notificaciones guardada",
+      "saveError": "No se pudo guardar la configuración de notificaciones",
+      "loadError": "No se pudo cargar la configuración de notificaciones"
+    }
   },
   "validation": {
     "required": "Este campo es obligatorio",

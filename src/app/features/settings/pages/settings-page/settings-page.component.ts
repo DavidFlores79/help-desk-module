@@ -1,9 +1,13 @@
-import { Component } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { RouterModule } from '@angular/router';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { LanguageSelectorComponent } from '../../../../shared/components/language-selector/language-selector.component';
+import { NotificationSettingsComponent } from '../../components/notification-settings/notification-settings.component';
+import { NotificationSettingsService } from '../../../../core/services/notification-settings.service';
+import { AuthService } from '../../../../core/services/auth.service';
+import { NotificationSettings } from '../../../../core/models/notification-settings.model';
 
 @Component({
   selector: 'app-settings-page',
@@ -13,7 +17,8 @@ import { LanguageSelectorComponent } from '../../../../shared/components/languag
     TranslatePipe,
     RouterModule,
     HeaderComponent,
-    LanguageSelectorComponent
+    LanguageSelectorComponent,
+    NotificationSettingsComponent
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -61,9 +66,22 @@ import { LanguageSelectorComponent } from '../../../../shared/components/languag
                 </svg>
                 {{ 'settings.notifications' | translate }}
               </h2>
-              <p class="text-gray-600 text-sm ml-4">
-                {{ 'app.info' | translate }}: {{ 'settings.notifications' | translate }} (Coming soon)
-              </p>
+              @if (notificationSettings) {
+                <app-notification-settings
+                  [settings]="notificationSettings"
+                  [canEdit]="canEditNotifications"
+                  [saving]="savingNotifications"
+                  [successMessageKey]="notificationsSuccessKey"
+                  [errorMessageKey]="notificationsErrorKey"
+                  (saveSettings)="saveNotificationSettings($event)"
+                ></app-notification-settings>
+              } @else if (notificationsErrorKey) {
+                <p class="ml-4 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                  {{ notificationsErrorKey | translate }}
+                </p>
+              } @else {
+                <p class="text-gray-500 text-sm ml-4">{{ 'app.loading' | translate }}</p>
+              }
             </div>
 
             <!-- Security Section -->
@@ -85,4 +103,70 @@ import { LanguageSelectorComponent } from '../../../../shared/components/languag
     </div>
   `
 })
-export class SettingsPageComponent {}
+export class SettingsPageComponent implements OnInit {
+  private notificationSettingsService = inject(NotificationSettingsService);
+  private authService = inject(AuthService);
+
+  notificationSettings: NotificationSettings | null = null;
+  canEditNotifications = this.authService.isSuperUser();
+  savingNotifications = false;
+  // Translation keys (translated in the template so they follow language changes)
+  notificationsSuccessKey = '';
+  notificationsErrorKey = '';
+
+  ngOnInit(): void {
+    this.notificationSettingsService.getSettings().subscribe({
+      next: (response) => {
+        this.notificationSettings = response.data;
+      },
+      error: () => {
+        this.notificationsErrorKey = 'settings.notificationSettings.loadError';
+      },
+    });
+  }
+
+  saveNotificationSettings(changes: Partial<NotificationSettings>): void {
+    this.savingNotifications = true;
+    this.notificationsSuccessKey = '';
+    this.notificationsErrorKey = '';
+
+    this.notificationSettingsService.updateSettings(changes).subscribe({
+      next: (response) => {
+        this.notificationSettings = response.data;
+        this.notificationsSuccessKey = 'settings.notificationSettings.saved';
+        this.savingNotifications = false;
+      },
+      error: (error: SaveError) => {
+        this.notificationsErrorKey = this.saveErrorKey(error);
+        this.savingNotifications = false;
+
+        // The server no longer sees this user as a superuser
+        if (error.status === 403) {
+          this.canEditNotifications = false;
+        }
+      },
+    });
+  }
+
+  private saveErrorKey(error: SaveError): string {
+    if (error.status === 403) {
+      return 'settings.notificationSettings.onlySuperusers';
+    }
+
+    const invalidFields = Object.keys(error.error?.errors ?? {});
+    const onlyEmailErrors =
+      invalidFields.length > 0 &&
+      invalidFields.every((field) => field.startsWith('ticket_created_extra_emails'));
+
+    if (error.status === 422 && onlyEmailErrors) {
+      return 'settings.notificationSettings.invalidEmail';
+    }
+    return 'settings.notificationSettings.saveError';
+  }
+}
+
+/** Error shape produced by the app's error interceptor. */
+interface SaveError {
+  status?: number;
+  error?: { errors?: Record<string, string[]> };
+}
