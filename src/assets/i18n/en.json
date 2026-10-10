@@ -91,7 +91,27 @@
     "passwordResetSuccess": "Password Reset",
     "canNowLogin": "Your password has been reset. You can now log in with your new password.",
     "goToLogin": "Go to Login",
-    "validationError": "Validation error. Please check the entered data."
+    "validationError": "Validation error. Please check the entered data.",
+    "emailDomainNotAllowed": "This email is not allowed. Use your institutional email.",
+    "allowedDomainsHint": "Use your institutional email: {{domains}} (subdomains included).",
+    "waitBeforeResend": "Wait a minute before asking for another code.",
+    "verifyEmailTitle": "Confirm your email",
+    "verifyEmailSubtitle": "This is the last step to create your account",
+    "verifyNeedsCredentials": "Enter your email, your password and the code we sent you.",
+    "codeSentTo": "We sent a 6-digit code to {{email}}.",
+    "verificationCode": "Verification code",
+    "codeExpiresHint": "The code expires in 15 minutes. If you don't see it, check your spam folder.",
+    "verifyEmail": "Confirm email",
+    "verifying": "Confirming...",
+    "resendCode": "Resend code",
+    "resendCodeIn": "Resend code in {{seconds}} s",
+    "codeResent": "We sent you a new code.",
+    "codeInvalid": "The code is not correct.",
+    "codeExpired": "The code expired. Ask for a new one.",
+    "codeTooManyAttempts": "Too many attempts. Ask for a new code.",
+    "emailAlreadyVerified": "Your email is already confirmed. Sign in.",
+    "tooManyTries": "Too many tries in a row. Wait a minute and try again.",
+    "signUpClosed": "Sign-up is closed for now. Ask support to create an account for you."
   },
   "nav": {
     "dashboard": "Dashboard",
@@ -165,7 +185,19 @@
     "userRequired": "User is required",
     "ticketOwner": "Ticket Owner",
     "typeMoreCharacters": "Type at least 2 characters to search",
-    "noUsersFound": "No users found"
+    "noUsersFound": "No users found",
+    "quick": {
+      "title": "Report a problem",
+      "subtitle": "Tell us what's wrong and we'll help. It only takes a minute.",
+      "whatsWrong": "What's wrong?",
+      "whatsWrongPlaceholder": "E.g. No internet in classroom 3",
+      "details": "Tell us more",
+      "detailsPlaceholder": "Where are you, since when, and what have you already tried?",
+      "category": "What is it about?",
+      "attachments": "Add a photo or file (optional)",
+      "submit": "Send report",
+      "emptyMessage": "Something not working? Report it and we'll help."
+    }
   },
   "status": {
     "open": "Open",
@@ -341,6 +373,21 @@
       "saved": "Notification settings saved",
       "saveError": "Could not save the notification settings",
       "loadError": "Could not load the notification settings"
+    },
+    "registration": "User sign-up",
+    "registrationSettings": {
+      "onlySuperusers": "Only superusers can change who can sign up.",
+      "allowedDomains": "Allowed domains",
+      "allowedDomainsDescription": "Only emails from these domains can create an account. Each domain includes its subdomains: uady.mx also allows @alumnos.uady.mx and @correo.uady.mx.",
+      "invalidDomain": "One or more domains are not valid. Write them like uady.mx, separated by commas.",
+      "tooManyDomains": "You can add at most 20 domains.",
+      "allowPublicEmails": "Allow any email",
+      "allowPublicEmailsDescription": "Anyone can sign up with any email (Gmail, Outlook...). The domains above are ignored.",
+      "signUpClosed": "Nobody will be able to create an account: add a domain or allow any email.",
+      "verificationAlwaysOn": "Every new account must confirm its email with a code before signing in. Accounts created by admins don't need it.",
+      "saved": "Sign-up settings saved",
+      "saveError": "Could not save the sign-up settings",
+      "loadError": "Could not load the sign-up settings"
     }
   },
   "validation": {

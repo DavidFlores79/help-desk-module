@@ -25,6 +25,12 @@ Run a single spec file:
 npx ng test --include='**/ticket.service.spec.ts'
 ```
 
+`npm run lint` is currently broken: ESLint 9 finds no flat config, and the legacy `.eslintrc.json` points at the solution-style `tsconfig.json`, which includes no files. Until that is migrated, lint files with the legacy config and the real tsconfig:
+```bash
+ESLINT_USE_FLAT_CONFIG=false npx eslint --fix --parser-options=project:./tsconfig.app.json <files>   # app code
+ESLINT_USE_FLAT_CONFIG=false npx eslint --fix --parser-options=project:./tsconfig.spec.json <files>  # specs
+```
+
 ## Commit & PR Rules
 
 > **STRICTLY FORBIDDEN**: Any commit message, PR title, PR description, or code comment must **never** reference AI tools, AI assistants, or AI companies. This includes but is not limited to:
@@ -111,13 +117,14 @@ private http = inject(HttpClient);
 
 ### Authentication & Roles
 
+- End users (people who sign up and file tickets) are UADY students, teachers and staff, with emails on `uady.mx` or one of its subdomains. Which email domains may sign up (including whether public emails like Gmail are allowed) must stay configurable from Settings, never hardcoded. Domain rules apply to sign-up only, not login, since admin accounts may use other domains.
 - JWT stored in `localStorage` as `auth_token`; user object as `auth_user`
 - `AuthInterceptor` auto-attaches `Bearer {token}` header to all requests
 - `401` responses auto-logout via `errorInterceptor` **only when not on an auth endpoint** (`/login`, `/register`, `/auth/*`) — prevents redirect loops during login
-- Role is computed from `user.my_profile.name` (API value) → internal `UserRole` type: `'user' | 'admin' | 'superuser'`
-  - API value `"Administrador"` or `"admin"` → role `'admin'`
-  - API value `"SuperUser"` → role `'superuser'`
-- Auth routes: `login`, `register`, `forgot-password`, `reset-password` (all public, no guard)
+- Role is computed from the profile flags `user.my_profile.is_superuser` / `is_admin` → internal `UserRole` type: `'user' | 'admin' | 'superuser'`
+- Auth routes: `login`, `register`, `verify-email`, `forgot-password`, `reset-password` (all public, no guard)
+- **Sign-up never logs in.** `register` returns no token; the user confirms a 6-digit emailed code at `/auth/verify-email`, which sends email + password + code (the password stops someone else confirming an account they squatted). Login answers `403` with `email_verification_required: true` for an unconfirmed account, and the login form redirects to the same screen. The credentials travel between screens only in memory (`AuthService.setPendingVerification`), never in storage or the URL; after a reload the screen asks for them again.
+- Regular users get a short "Report a problem" ticket form (no priority, categories as chips) and land on it right after confirming their email; admins keep the full form.
 - `RedirectWithParamsComponent` at `/reset-password` forwards email reset links from the backend to `/auth/reset-password` preserving query params
 
 ### API Response Shape

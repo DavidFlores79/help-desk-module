@@ -41,17 +41,44 @@ export interface RegisterDto {
   department?: string;
 }
 
+/** Sign-up returns no session: the email must be confirmed with a code first. */
+export interface RegisterResult {
+  email: string;
+  verification_required: boolean;
+  code_expires_in_minutes: number;
+}
+
+/** Confirms a new account. The password is required so only its owner can confirm it. */
+export interface VerifyEmailDto {
+  email: string;
+  password: string;
+  code: string;
+}
+
+export interface ResendVerificationDto {
+  email: string;
+  password: string;
+}
+
+/** Session returned by the v1 auth endpoints (verify-email). */
+export interface SessionPayload {
+  user: AuthUser;
+  token: string;
+  token_type: string;
+  expires_at: number;
+}
+
+/** Why a code was rejected (in `errors.reason` of a 400 from verify-email). */
+export type VerificationFailure = 'invalid_code' | 'expired' | 'too_many_attempts' | 'not_pending';
+
 export interface ForgotPasswordDto {
   email: string;
 }
 
+/** Same answer whether or not the email has an account; the link only arrives by email. */
 export interface ForgotPasswordResponse {
   success: boolean;
   message: string;
-  data?: {
-    message: string;
-    token?: string; // Only returned in development environment
-  };
 }
 
 export interface VerifyResetTokenDto {

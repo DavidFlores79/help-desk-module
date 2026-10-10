@@ -40,7 +40,13 @@ import { User } from '../../../../core/models/ticket.model';
         </div>
 
         <div class="card">
-          <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-4 sm:mb-6">{{ 'ticket.createNewTicket' | translate }}</h1>
+          @if (isAdmin) {
+            <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-4 sm:mb-6">{{ 'ticket.createNewTicket' | translate }}</h1>
+          } @else {
+            <!-- Regular users get a short form: what's wrong, details, optional photo -->
+            <h1 class="text-xl sm:text-2xl font-heading font-bold text-gray-900 mb-1">{{ 'ticket.quick.title' | translate }}</h1>
+            <p class="text-sm text-gray-600 mb-4 sm:mb-6">{{ 'ticket.quick.subtitle' | translate }}</p>
+          }
 
           <form [formGroup]="ticketForm" (ngSubmit)="onSubmit()">
             <!-- User Selection (Admins Only) -->
@@ -125,15 +131,16 @@ import { User } from '../../../../core/models/ticket.model';
             <!-- Title -->
             <div class="mb-4">
               <label for="title" class="block text-sm font-medium text-gray-700 mb-2">
-                {{ 'ticket.title' | translate }} <span class="text-danger-600">*</span>
+                {{ (isAdmin ? 'ticket.title' : 'ticket.quick.whatsWrong') | translate }} <span class="text-danger-600">*</span>
               </label>
               <input
                 id="title"
                 type="text"
                 formControlName="title"
+                maxlength="255"
                 class="input-field"
                 [class.border-danger-500]="ticketForm.get('title')?.invalid && ticketForm.get('title')?.touched"
-                [placeholder]="'ticket.briefDescription' | translate"
+                [placeholder]="(isAdmin ? 'ticket.briefDescription' : 'ticket.quick.whatsWrongPlaceholder') | translate"
               />
               @if (ticketForm.get('title')?.invalid && ticketForm.get('title')?.touched) {
                 <p class="mt-1 text-sm text-danger-600">{{ 'ticket.titleRequired' | translate }}</p>
@@ -143,7 +150,7 @@ import { User } from '../../../../core/models/ticket.model';
             <!-- Description -->
             <div class="mb-4">
               <label for="description" class="block text-sm font-medium text-gray-700 mb-2">
-                {{ 'ticket.description' | translate }} <span class="text-danger-600">*</span>
+                {{ (isAdmin ? 'ticket.description' : 'ticket.quick.details') | translate }} <span class="text-danger-600">*</span>
               </label>
               <textarea
                 id="description"
@@ -151,14 +158,43 @@ import { User } from '../../../../core/models/ticket.model';
                 rows="5"
                 class="input-field resize-y"
                 [class.border-danger-500]="ticketForm.get('description')?.invalid && ticketForm.get('description')?.touched"
-                [placeholder]="'ticket.detailedInfo' | translate"
+                [placeholder]="(isAdmin ? 'ticket.detailedInfo' : 'ticket.quick.detailsPlaceholder') | translate"
               ></textarea>
               @if (ticketForm.get('description')?.invalid && ticketForm.get('description')?.touched) {
                 <p class="mt-1 text-sm text-danger-600">{{ 'ticket.descriptionRequired' | translate }}</p>
               }
             </div>
 
-            <!-- Priority and Category Grid on larger screens -->
+            <!-- Regular users: optional category as one-tap chips; priority stays "medium" (support sets it) -->
+            @if (!isAdmin && ticketCategories.length > 0) {
+              <div class="mb-4">
+                <p class="block text-sm font-medium text-gray-700 mb-2">
+                  {{ 'ticket.quick.category' | translate }}
+                  <span class="text-gray-400 font-normal">({{ 'app.optional' | translate }})</span>
+                </p>
+                <div class="flex flex-wrap gap-2">
+                  @for (category of ticketCategories; track category.id) {
+                    @let selected = isCategorySelected(category.id);
+                    <button
+                      type="button"
+                      class="px-3 py-1.5 rounded-full border text-sm transition-colors"
+                      [class.bg-primary-600]="selected"
+                      [class.text-white]="selected"
+                      [class.border-primary-600]="selected"
+                      [class.border-gray-300]="!selected"
+                      [class.text-gray-700]="!selected"
+                      [attr.aria-pressed]="selected"
+                      (click)="toggleCategory(category.id)"
+                    >
+                      {{ category.name }}
+                    </button>
+                  }
+                </div>
+              </div>
+            }
+
+            <!-- Priority and Category Grid on larger screens (admins) -->
+            @if (isAdmin) {
             <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
               <!-- Priority -->
               <div>
@@ -193,11 +229,12 @@ import { User } from '../../../../core/models/ticket.model';
                 </select>
               </div>
             </div>
+            }
 
             <!-- File Upload -->
             <div class="mb-6">
               <label class="block text-sm font-medium text-gray-700 mb-2">
-                {{ 'ticket.attachments' | translate }}
+                {{ (isAdmin ? 'ticket.attachments' : 'ticket.quick.attachments') | translate }}
               </label>
               <app-file-upload
                 formControlName="attachments"
@@ -232,7 +269,7 @@ import { User } from '../../../../core/models/ticket.model';
                 class="btn-primary relative z-50 pointer-events-auto w-full sm:w-auto"
                 style="pointer-events: auto !important; position: relative; z-index: 9999;"
                 [disabled]="ticketForm.invalid || isSubmitting">
-                {{ isSubmitting ? ('ticket.creating' | translate) : ('ticket.createTicket' | translate) }}
+                {{ isSubmitting ? ('ticket.creating' | translate) : ((isAdmin ? 'ticket.createTicket' : 'ticket.quick.submit') | translate) }}
               </button>
             </div>
           </form>
@@ -399,6 +436,16 @@ export class NewTicketPageComponent implements OnInit, OnDestroy {
         }
       });
     }
+  }
+
+  isCategorySelected(categoryId: number): boolean {
+    return this.ticketForm.value.ticket_category_id === String(categoryId);
+  }
+
+  /** Tapping the selected chip again clears the category. */
+  toggleCategory(categoryId: number): void {
+    const value = this.isCategorySelected(categoryId) ? '' : String(categoryId);
+    this.ticketForm.patchValue({ ticket_category_id: value });
   }
 
   cancel(): void {

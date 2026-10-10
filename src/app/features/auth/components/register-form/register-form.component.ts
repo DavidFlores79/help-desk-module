@@ -1,10 +1,14 @@
-import { Component, inject } from '@angular/core';
+import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
 import { TranslationService } from '../../../../core/services/translation.service';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
+import {
+  RegistrationOptions,
+  isEmailAllowed
+} from '../../../../core/models/registration-settings.model';
 
 @Component({
   selector: 'app-register-form',
@@ -42,8 +46,17 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
             [class.border-danger-500]="registerForm.get('email')?.invalid && registerForm.get('email')?.touched"
             [placeholder]="'auth.emailPlaceholder' | translate"
           />
-          @if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
+          @if (registerForm.get('email')?.touched && registerForm.get('email')?.hasError('domainNotAllowed')) {
+            <p class="mt-1 text-sm text-danger-600">{{ 'auth.emailDomainNotAllowed' | translate }}</p>
+          } @else if (registerForm.get('email')?.invalid && registerForm.get('email')?.touched) {
             <p class="mt-1 text-sm text-danger-600">{{ 'auth.emailRequired' | translate }}</p>
+          }
+          @if (signUpClosed) {
+            <p class="mt-1 text-sm text-amber-600">{{ 'auth.signUpClosed' | translate }}</p>
+          } @else if (allowedDomainsHint) {
+            <p class="mt-1 text-xs text-gray-500">
+              {{ 'auth.allowedDomainsHint' | translate: { domains: allowedDomainsHint } }}
+            </p>
           }
         </div>
 
@@ -142,15 +155,22 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
     </div>
   `
 })
-export class RegisterFormComponent {
+export class RegisterFormComponent implements OnInit {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
   private translationService = inject(TranslationService);
 
+  /** Sign-up rules from the API; until they load, the API is the only check. */
+  private registrationOptions: RegistrationOptions | null = null;
+
   registerForm = this.fb.group({
     name: ['', [Validators.required, Validators.maxLength(255)]],
-    email: ['', [Validators.required, Validators.email]],
+    email: ['', [
+      Validators.required,
+      Validators.email,
+      (control: AbstractControl) => this.allowedDomainValidator(control)
+    ]],
     phone: ['', [Validators.maxLength(15)]],
     department: ['', [Validators.maxLength(255)]],
     password: ['', [Validators.required, Validators.minLength(6)]],
@@ -159,6 +179,35 @@ export class RegisterFormComponent {
 
   isLoading = false;
   errorMessage = '';
+  /** e.g. "@uady.mx" — empty when any email is allowed */
+  allowedDomainsHint = '';
+  /** No domain allowed and public emails off: nobody can sign up right now */
+  signUpClosed = false;
+
+  ngOnInit(): void {
+    this.authService.getRegistrationOptions().subscribe({
+      next: (response) => {
+        this.registrationOptions = response.data;
+        this.allowedDomainsHint = response.data.allow_public_emails
+          ? ''
+          : response.data.allowed_domains.map((domain) => '@' + domain).join(', ');
+        this.signUpClosed =
+          !response.data.allow_public_emails && response.data.allowed_domains.length === 0;
+        this.registerForm.controls.email.updateValueAndValidity();
+      },
+      // Not critical: the API still rejects an email it doesn't allow
+      error: () => {}
+    });
+  }
+
+  private allowedDomainValidator(control: AbstractControl): ValidationErrors | null {
+    const email: string = control.value ?? '';
+
+    if (!this.registrationOptions || !email.includes('@')) {
+      return null;
+    }
+    return isEmailAllowed(email, this.registrationOptions) ? null : { domainNotAllowed: true };
+  }
 
   passwordMatchValidator(control: AbstractControl): ValidationErrors | null {
     const password = control.get('password');
@@ -187,7 +236,13 @@ export class RegisterFormComponent {
 
       this.authService.register(data).subscribe({
         next: () => {
-          this.router.navigate(['/tickets']);
+          // No session yet: the account is confirmed with the code we just emailed
+          this.authService.setPendingVerification({
+            email: data.email,
+            password: data.password,
+            codeSentAt: Date.now()
+          });
+          this.router.navigate(['/auth/verify-email']);
         },
         error: (error) => {
           if (error.status === 422) {
@@ -200,6 +255,16 @@ export class RegisterFormComponent {
             } else {
               this.errorMessage = this.translationService.instant('auth.validationError');
             }
+          } else if (error.status === 429) {
+            // Signed up again within a minute: the code from the first try is
+            // still valid, so go enter it
+            this.authService.setPendingVerification({
+              email: data.email,
+              password: data.password,
+              codeSentAt: Date.now()
+            });
+            this.router.navigate(['/auth/verify-email']);
+            return;
           } else if (error.status === 0) {
             this.errorMessage = this.translationService.instant('auth.cannotConnect');
           } else {
