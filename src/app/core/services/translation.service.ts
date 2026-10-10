@@ -18,6 +18,10 @@ export class TranslationService {
   private translationsLoaded = new BehaviorSubject<boolean>(false);
   public translationsLoaded$ = this.translationsLoaded.asObservable();
 
+  // The JSON files keep the same URL across deploys, so always ask the server
+  // whether they changed (a cheap 304 when not) instead of reusing a stale copy
+  private readonly FETCH_OPTIONS: RequestInit = { cache: 'no-cache' };
+
   constructor() {
     // Don't auto-initialize, let app component do it
   }
@@ -37,7 +41,7 @@ export class TranslationService {
   private async loadTranslations(lang: string): Promise<void> {
     try {
       const translationUrl = `/assets/i18n/${lang}.json`;
-      const response = await fetch(translationUrl);
+      const response = await fetch(translationUrl, this.FETCH_OPTIONS);
       
       if (!response.ok) {
         throw new Error(`Failed to load translations: ${response.status}`);
@@ -51,21 +55,9 @@ export class TranslationService {
       
       // Fallback to default language if loading fails
       if (lang !== this.DEFAULT_LANGUAGE) {
-        try {
-          const fallbackUrl = `/assets/i18n/${this.DEFAULT_LANGUAGE}.json`;
-          const response = await fetch(fallbackUrl);
-          
-          if (response.ok) {
-            this.translations = await response.json();
-            this.currentLang = this.DEFAULT_LANGUAGE;
-            this.translationsLoaded.next(true);
-            return;
-          }
-        } catch (fallbackError) {
-          console.error('Failed to load fallback translations:', fallbackError);
-        }
+        return this.loadTranslations(this.DEFAULT_LANGUAGE);
       }
-      
+
       // If all fails, use empty translations
       this.translations = {};
       this.translationsLoaded.next(true);
