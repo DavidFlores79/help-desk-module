@@ -111,7 +111,8 @@
     "codeTooManyAttempts": "Demasiados intentos. Pide un código nuevo.",
     "emailAlreadyVerified": "Tu correo ya está confirmado. Inicia sesión.",
     "tooManyTries": "Demasiados intentos seguidos. Espera un minuto e intenta de nuevo.",
-    "signUpClosed": "El registro está cerrado por ahora. Pide a soporte que te cree una cuenta."
+    "signUpClosed": "El registro está cerrado por ahora. Pide a soporte que te cree una cuenta.",
+    "firstTimeCreateAccount": "¿Primera vez? Crea tu cuenta"
   },
   "nav": {
     "dashboard": "Panel",

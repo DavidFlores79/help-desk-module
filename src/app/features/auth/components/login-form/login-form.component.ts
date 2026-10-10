@@ -1,8 +1,9 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
-import { Router, RouterLink } from '@angular/router';
+import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { AuthService } from '../../../../core/services/auth.service';
+import { safeReturnUrl } from '../../../../core/guards/auth.guard';
 import { environment } from '../../../../../environments/environment';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 
@@ -67,12 +68,20 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
           {{ isLoading ? ('auth.signingIn' | translate) : ('auth.signIn' | translate) }}
         </button>
 
-        <div class="mt-4 flex items-center justify-between">
+        <div class="mt-4 text-center">
           <a routerLink="/auth/forgot-password" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
             {{ 'auth.forgotPassword' | translate }}
           </a>
-          <a routerLink="/auth/register" class="text-sm text-primary-600 hover:text-primary-700 font-medium">
-            {{ 'auth.createAccount' | translate }}
+        </div>
+
+        <!-- First-time visitors (e.g. from the QR code) need sign-up to be obvious -->
+        <div class="mt-6 pt-6 border-t border-gray-200">
+          <a
+            routerLink="/auth/register"
+            queryParamsHandling="preserve"
+            class="w-full btn-secondary inline-flex items-center justify-center"
+          >
+            {{ 'auth.firstTimeCreateAccount' | translate }}
           </a>
         </div>
 
@@ -92,6 +101,7 @@ export class LoginFormComponent {
   private fb = inject(FormBuilder);
   private authService = inject(AuthService);
   private router = inject(Router);
+  private route = inject(ActivatedRoute);
 
   // Expose API URL and environment for template
   apiUrl = `${environment.apiUrl}/login`;
@@ -114,7 +124,9 @@ export class LoginFormComponent {
 
       this.authService.login(credentials).subscribe({
         next: () => {
-          this.router.navigate(['/tickets']);
+          // Back to the page the user asked for before being sent to log in (see authGuard)
+          const returnUrl = this.route.snapshot.queryParamMap.get('returnUrl');
+          this.router.navigateByUrl(safeReturnUrl(returnUrl));
         },
         error: (error) => {
           // A new account that hasn't confirmed its email yet: open the code screen

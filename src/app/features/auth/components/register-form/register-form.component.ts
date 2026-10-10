@@ -147,7 +147,7 @@ import {
 
         <div class="text-center">
           <span class="text-sm text-gray-600">{{ 'auth.alreadyHaveAccount' | translate }}</span>
-          <a routerLink="/auth/login" class="text-sm text-primary-600 hover:text-primary-700 font-medium ml-1">
+          <a routerLink="/auth/login" queryParamsHandling="preserve" class="text-sm text-primary-600 hover:text-primary-700 font-medium ml-1">
             {{ 'auth.signIn' | translate }}
           </a>
         </div>

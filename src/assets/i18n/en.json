@@ -111,7 +111,8 @@
     "codeTooManyAttempts": "Too many attempts. Ask for a new code.",
     "emailAlreadyVerified": "Your email is already confirmed. Sign in.",
     "tooManyTries": "Too many tries in a row. Wait a minute and try again.",
-    "signUpClosed": "Sign-up is closed for now. Ask support to create an account for you."
+    "signUpClosed": "Sign-up is closed for now. Ask support to create an account for you.",
+    "firstTimeCreateAccount": "First time? Create your account"
   },
   "nav": {
     "dashboard": "Dashboard",

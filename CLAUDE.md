@@ -124,6 +124,7 @@ private http = inject(HttpClient);
 - Role is computed from the profile flags `user.my_profile.is_superuser` / `is_admin` → internal `UserRole` type: `'user' | 'admin' | 'superuser'`
 - Auth routes: `login`, `register`, `verify-email`, `forgot-password`, `reset-password` (all public, no guard)
 - **Sign-up never logs in.** `register` returns no token; the user confirms a 6-digit emailed code at `/auth/verify-email`, which sends email + password + code (the password stops someone else confirming an account they squatted). Login answers `403` with `email_verification_required: true` for an unconfirmed account, and the login form redirects to the same screen. The credentials travel between screens only in memory (`AuthService.setPendingVerification`), never in storage or the URL; after a reload the screen asks for them again.
+- `/reportar` is printed on the help desk QR code: **never remove or rename it** (change only where it redirects). It leads to `/tickets/new`; logged-out visitors go to login with `?returnUrl=`, and login returns there (`safeReturnUrl` in `auth.guard.ts` only accepts in-app paths).
 - Regular users get a short "Report a problem" ticket form (no priority, categories as chips) and land on it right after confirming their email; admins keep the full form.
 - `RedirectWithParamsComponent` at `/reset-password` forwards email reset links from the backend to `/auth/reset-password` preserving query params
 
