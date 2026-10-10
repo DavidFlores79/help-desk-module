@@ -9,6 +9,12 @@ export const routes: Routes = [
     redirectTo: '/tickets',
     pathMatch: 'full'
   },
+  // Printed on the help desk QR code: keep this path stable, change only where it leads
+  {
+    path: 'reportar',
+    redirectTo: '/tickets/new',
+    pathMatch: 'full'
+  },
   {
     path: 'auth',
     loadChildren: () => import('./features/auth/auth.routes').then(m => m.authRoutes)
