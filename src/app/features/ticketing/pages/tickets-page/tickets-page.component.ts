@@ -37,11 +37,14 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
             <h2 class="text-2xl sm:text-3xl font-heading font-bold text-gray-900">{{ 'ticket.myTickets' | translate }}</h2>
             <p class="text-sm sm:text-base text-gray-600 mt-1">{{ 'ticket.manageTickets' | translate }}</p>
           </div>
+          <!-- Regular users see the label on phones too, so reporting is one obvious tap -->
           <a routerLink="/tickets/new" class="btn-primary inline-flex items-center justify-center whitespace-nowrap">
-            <svg class="w-5 h-5 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <svg class="w-5 h-5" [class.mr-2]="!isAdmin" [class.sm:mr-2]="isAdmin" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
             </svg>
-            <span class="hidden sm:inline">{{ 'ticket.newTicket' | translate }}</span>
+            <span [class.hidden]="isAdmin" [class.sm:inline]="isAdmin">
+              {{ (isAdmin ? 'ticket.newTicket' : 'ticket.quick.title') | translate }}
+            </span>
           </a>
         </div>
 
@@ -170,13 +173,15 @@ import { FormatResolutionTimePipe } from '../../../../shared/pipes/format-resolu
                     d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
             </svg>
             <h3 class="mt-2 text-sm font-medium text-gray-900">{{ 'ticket.noTickets' | translate }}</h3>
-            <p class="mt-1 text-sm text-gray-500">{{ 'ticket.getStartedMessage' | translate }}</p>
+            <p class="mt-1 text-sm text-gray-500">
+              {{ (isAdmin ? 'ticket.getStartedMessage' : 'ticket.quick.emptyMessage') | translate }}
+            </p>
             <div class="mt-6">
               <a routerLink="/tickets/new" class="btn-primary inline-flex items-center">
                 <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
                 </svg>
-                {{ 'ticket.createNewTicket' | translate }}
+                {{ (isAdmin ? 'ticket.createNewTicket' : 'ticket.quick.title') | translate }}
               </a>
             </div>
           </div>
@@ -205,6 +210,7 @@ export class TicketsPageComponent implements OnInit {
   private ticketService = inject(TicketService);
   private authService = inject(AuthService);
 
+  isAdmin = this.authService.isAdmin();
   tickets: Ticket[] = [];
   filters: any = {
     status: '',

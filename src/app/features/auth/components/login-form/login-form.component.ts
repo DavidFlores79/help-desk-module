@@ -110,11 +110,20 @@ export class LoginFormComponent {
       this.isLoading = true;
       this.errorMessage = '';
 
-      this.authService.login(this.loginForm.value as any).subscribe({
+      const credentials = this.loginForm.getRawValue() as { email: string; password: string };
+
+      this.authService.login(credentials).subscribe({
         next: () => {
           this.router.navigate(['/tickets']);
         },
         error: (error) => {
+          // A new account that hasn't confirmed its email yet: open the code screen
+          if (error.status === 403 && error.error?.email_verification_required) {
+            this.authService.setPendingVerification({ ...credentials, codeSentAt: null });
+            this.router.navigate(['/auth/verify-email']);
+            return;
+          }
+
           this.errorMessage = error.message || 'Por favor intenta de nuevo';
           this.isLoading = false;
         },

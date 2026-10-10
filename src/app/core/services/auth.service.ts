@@ -16,9 +16,26 @@ import {
   ResetPasswordDto,
   ResetPasswordResponse,
   ChangePasswordDto,
-  ChangePasswordResponse
+  ChangePasswordResponse,
+  RegisterResult,
+  VerifyEmailDto,
+  ResendVerificationDto,
+  SessionPayload
 } from '../models/auth.model';
 import { ApiResponse } from '../models/api-response.model';
+import { RegistrationOptions } from '../models/registration-settings.model';
+
+/**
+ * Credentials of a sign-up waiting for its email code. Kept in memory only
+ * (never in storage), so the code screen doesn't ask for the password again
+ * right after sign-up or login. A page reload clears it.
+ */
+export interface PendingVerification {
+  email: string;
+  password: string;
+  /** When the last code was emailed (ms), to show the resend countdown */
+  codeSentAt: number | null;
+}
 
 @Injectable({
   providedIn: 'root'
@@ -35,6 +52,8 @@ export class AuthService {
   
   // Signal for reactive state
   public isAuthenticated = signal<boolean>(!!this.getToken());
+
+  private pendingVerification: PendingVerification | null = null;
 
   constructor() {
     this.initializeAuth();
@@ -56,24 +75,65 @@ export class AuthService {
         if (response.jwt && response.user) {
           const user = this.normalizeUser(response.user);
           this.setSession(response.jwt, user);
+          this.clearPendingVerification();
         }
       })
     );
   }
 
-  register(data: RegisterDto): Observable<any> {
-    return this.http.post<any>(`${environment.apiUrl}/v1/auth/register`, data).pipe(
-      tap(response => {
-        if (response.jwt && response.user) {
-          const user = this.normalizeUser(response.user);
-          this.setSession(response.jwt, user);
-        }
-      })
+  /** Creates the account and emails a code; there is no session until verifyEmail(). */
+  register(data: RegisterDto): Observable<ApiResponse<RegisterResult>> {
+    return this.http.post<ApiResponse<RegisterResult>>(
+      `${environment.apiUrl}/v1/auth/register`,
+      data
     );
+  }
+
+  /** Confirms the email with the emailed code and starts the session. */
+  verifyEmail(data: VerifyEmailDto): Observable<ApiResponse<SessionPayload>> {
+    return this.http
+      .post<ApiResponse<SessionPayload>>(`${environment.apiUrl}/v1/auth/verify-email`, data)
+      .pipe(
+        tap(response => {
+          this.setSession(response.data.token, this.normalizeUser(response.data.user));
+          this.clearPendingVerification();
+        })
+      );
+  }
+
+  /** Emails a new code (the API allows one per minute). */
+  resendVerification(
+    data: ResendVerificationDto
+  ): Observable<ApiResponse<{ code_expires_in_minutes: number }>> {
+    return this.http.post<ApiResponse<{ code_expires_in_minutes: number }>>(
+      `${environment.apiUrl}/v1/auth/resend-verification`,
+      data
+    );
+  }
+
+  /** Which emails may sign up, so the form can say so before submitting. */
+  getRegistrationOptions(): Observable<ApiResponse<RegistrationOptions>> {
+    return this.http.get<ApiResponse<RegistrationOptions>>(
+      `${environment.apiUrl}/v1/auth/registration-options`
+    );
+  }
+
+  setPendingVerification(pending: PendingVerification): void {
+    this.pendingVerification = pending;
+  }
+
+  getPendingVerification(): PendingVerification | null {
+    return this.pendingVerification;
+  }
+
+  /** Forget the password once it isn't needed (also on logout and leaving the code screen). */
+  clearPendingVerification(): void {
+    this.pendingVerification = null;
   }
 
   logout(): void {
     this.clearSession();
+    this.clearPendingVerification();
     this.router.navigate(['/auth/login']);
   }
 

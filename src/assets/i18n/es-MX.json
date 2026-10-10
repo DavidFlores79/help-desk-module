@@ -91,7 +91,27 @@
     "passwordResetSuccess": "Contraseña Restablecida",
     "canNowLogin": "Tu contraseña ha sido restablecida. Ahora puedes iniciar sesión con tu nueva contraseña.",
     "goToLogin": "Ir al Inicio de Sesión",
-    "validationError": "Error de validación. Por favor verifica los datos ingresados."
+    "validationError": "Error de validación. Por favor verifica los datos ingresados.",
+    "emailDomainNotAllowed": "Este correo no está permitido. Usa tu correo institucional.",
+    "allowedDomainsHint": "Usa tu correo institucional: {{domains}} (incluye subdominios).",
+    "waitBeforeResend": "Espera un minuto antes de pedir otro código.",
+    "verifyEmailTitle": "Confirma tu correo",
+    "verifyEmailSubtitle": "Es el último paso para crear tu cuenta",
+    "verifyNeedsCredentials": "Ingresa tu correo, tu contraseña y el código que te enviamos.",
+    "codeSentTo": "Te enviamos un código de 6 dígitos a {{email}}.",
+    "verificationCode": "Código de verificación",
+    "codeExpiresHint": "El código vence en 15 minutos. Si no lo ves, revisa tu carpeta de spam.",
+    "verifyEmail": "Confirmar correo",
+    "verifying": "Confirmando...",
+    "resendCode": "Reenviar código",
+    "resendCodeIn": "Reenviar código en {{seconds}} s",
+    "codeResent": "Te enviamos un código nuevo.",
+    "codeInvalid": "El código no es correcto.",
+    "codeExpired": "El código expiró. Pide uno nuevo.",
+    "codeTooManyAttempts": "Demasiados intentos. Pide un código nuevo.",
+    "emailAlreadyVerified": "Tu correo ya está confirmado. Inicia sesión.",
+    "tooManyTries": "Demasiados intentos seguidos. Espera un minuto e intenta de nuevo.",
+    "signUpClosed": "El registro está cerrado por ahora. Pide a soporte que te cree una cuenta."
   },
   "nav": {
     "dashboard": "Panel",
@@ -165,7 +185,19 @@
     "userRequired": "El usuario es requerido",
     "ticketOwner": "Propietario del Ticket",
     "typeMoreCharacters": "Escribe al menos 2 caracteres para buscar",
-    "noUsersFound": "No se encontraron usuarios"
+    "noUsersFound": "No se encontraron usuarios",
+    "quick": {
+      "title": "Reportar un problema",
+      "subtitle": "Cuéntanos qué pasa y te ayudamos. Solo toma un minuto.",
+      "whatsWrong": "¿Qué pasa?",
+      "whatsWrongPlaceholder": "Ej. No hay internet en el salón 3",
+      "details": "Cuéntanos más",
+      "detailsPlaceholder": "¿Dónde estás, desde cuándo pasa y qué ya intentaste?",
+      "category": "¿De qué se trata?",
+      "attachments": "Agrega una foto o archivo (opcional)",
+      "submit": "Enviar reporte",
+      "emptyMessage": "¿Algo no funciona? Repórtalo y te ayudamos."
+    }
   },
   "status": {
     "open": "Abierto",
@@ -341,6 +373,21 @@
       "saved": "Configuración de notificaciones guardada",
       "saveError": "No se pudo guardar la configuración de notificaciones",
       "loadError": "No se pudo cargar la configuración de notificaciones"
+    },
+    "registration": "Registro de usuarios",
+    "registrationSettings": {
+      "onlySuperusers": "Solo los superusuarios pueden cambiar quién puede registrarse.",
+      "allowedDomains": "Dominios permitidos",
+      "allowedDomainsDescription": "Solo los correos de estos dominios pueden crear una cuenta. Cada dominio incluye sus subdominios: uady.mx también permite @alumnos.uady.mx y @correo.uady.mx.",
+      "invalidDomain": "Uno o más dominios no son válidos. Escríbelos como uady.mx, separados por coma.",
+      "tooManyDomains": "Puedes agregar como máximo 20 dominios.",
+      "allowPublicEmails": "Permitir cualquier correo",
+      "allowPublicEmailsDescription": "Cualquier persona podrá registrarse con cualquier correo (Gmail, Outlook...). Los dominios de arriba se ignoran.",
+      "signUpClosed": "Nadie podrá crear una cuenta: agrega un dominio o permite cualquier correo.",
+      "verificationAlwaysOn": "Toda cuenta nueva debe confirmar su correo con un código antes de entrar. Las cuentas que crean los administradores no lo necesitan.",
+      "saved": "Configuración de registro guardada",
+      "saveError": "No se pudo guardar la configuración de registro",
+      "loadError": "No se pudo cargar la configuración de registro"
     }
   },
   "validation": {

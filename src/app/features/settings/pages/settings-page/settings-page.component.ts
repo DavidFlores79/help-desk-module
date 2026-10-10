@@ -8,6 +8,11 @@ import { NotificationSettingsComponent } from '../../components/notification-set
 import { NotificationSettingsService } from '../../../../core/services/notification-settings.service';
 import { AuthService } from '../../../../core/services/auth.service';
 import { NotificationSettings } from '../../../../core/models/notification-settings.model';
+import {
+  RegistrationSettingsComponent
+} from '../../components/registration-settings/registration-settings.component';
+import { RegistrationSettingsService } from '../../../../core/services/registration-settings.service';
+import { RegistrationSettings } from '../../../../core/models/registration-settings.model';
 
 @Component({
   selector: 'app-settings-page',
@@ -18,7 +23,8 @@ import { NotificationSettings } from '../../../../core/models/notification-setti
     RouterModule,
     HeaderComponent,
     LanguageSelectorComponent,
-    NotificationSettingsComponent
+    NotificationSettingsComponent,
+    RegistrationSettingsComponent
   ],
   template: `
     <div class="min-h-screen bg-gray-50">
@@ -84,6 +90,33 @@ import { NotificationSettings } from '../../../../core/models/notification-setti
               }
             </div>
 
+            <!-- Registration Section: who can create their own account -->
+            <div class="border-b border-gray-200 pb-6">
+              <h2 class="text-xl font-semibold text-gray-900 mb-4 ml-2 flex items-center gap-2">
+                <svg class="w-6 h-6 text-primary-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                </svg>
+                {{ 'settings.registration' | translate }}
+              </h2>
+              @if (registrationSettings) {
+                <app-registration-settings
+                  [settings]="registrationSettings"
+                  [canEdit]="canEditRegistration"
+                  [saving]="savingRegistration"
+                  [successMessageKey]="registrationSuccessKey"
+                  [errorMessageKey]="registrationErrorKey"
+                  (saveSettings)="saveRegistrationSettings($event)"
+                ></app-registration-settings>
+              } @else if (registrationErrorKey) {
+                <p class="ml-4 p-2 bg-red-50 border border-red-200 rounded text-sm text-red-700">
+                  {{ registrationErrorKey | translate }}
+                </p>
+              } @else {
+                <p class="text-gray-500 text-sm ml-4">{{ 'app.loading' | translate }}</p>
+              }
+            </div>
+
             <!-- Security Section -->
             <div>
               <h2 class="text-xl font-semibold text-gray-900 mb-4 ml-2 flex items-center gap-2">
@@ -105,6 +138,7 @@ import { NotificationSettings } from '../../../../core/models/notification-setti
 })
 export class SettingsPageComponent implements OnInit {
   private notificationSettingsService = inject(NotificationSettingsService);
+  private registrationSettingsService = inject(RegistrationSettingsService);
   private authService = inject(AuthService);
 
   notificationSettings: NotificationSettings | null = null;
@@ -114,6 +148,12 @@ export class SettingsPageComponent implements OnInit {
   notificationsSuccessKey = '';
   notificationsErrorKey = '';
 
+  registrationSettings: RegistrationSettings | null = null;
+  canEditRegistration = this.authService.isSuperUser();
+  savingRegistration = false;
+  registrationSuccessKey = '';
+  registrationErrorKey = '';
+
   ngOnInit(): void {
     this.notificationSettingsService.getSettings().subscribe({
       next: (response) => {
@@ -121,6 +161,42 @@ export class SettingsPageComponent implements OnInit {
       },
       error: () => {
         this.notificationsErrorKey = 'settings.notificationSettings.loadError';
+      },
+    });
+
+    this.registrationSettingsService.getSettings().subscribe({
+      next: (response) => {
+        this.registrationSettings = response.data;
+      },
+      error: () => {
+        this.registrationErrorKey = 'settings.registrationSettings.loadError';
+      },
+    });
+  }
+
+  saveRegistrationSettings(changes: Partial<RegistrationSettings>): void {
+    this.savingRegistration = true;
+    this.registrationSuccessKey = '';
+    this.registrationErrorKey = '';
+
+    this.registrationSettingsService.updateSettings(changes).subscribe({
+      next: (response) => {
+        this.registrationSettings = response.data;
+        this.registrationSuccessKey = 'settings.registrationSettings.saved';
+        this.savingRegistration = false;
+      },
+      error: (error: SaveError) => {
+        this.savingRegistration = false;
+
+        if (error.status === 403) {
+          // The server no longer sees this user as a superuser
+          this.registrationErrorKey = 'settings.registrationSettings.onlySuperusers';
+          this.canEditRegistration = false;
+        } else if (error.status === 422) {
+          this.registrationErrorKey = 'settings.registrationSettings.invalidDomain';
+        } else {
+          this.registrationErrorKey = 'settings.registrationSettings.saveError';
+        }
       },
     });
   }
