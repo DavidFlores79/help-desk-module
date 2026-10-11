@@ -170,6 +170,9 @@
     "cannotChangePriorityClosed": "Cannot change priority of closed tickets.",
     "cannotChangeCategoryClosed": "Cannot change category of closed tickets.",
     "cannotAssignClosed": "Cannot assign closed tickets.",
+    "updateStatus": "Update Status",
+    "statusUpdateError": "Failed to update status",
+    "categoryUpdateError": "Failed to change category",
     "ticketNumber": "Ticket Number",
     "selectPriority": "Select priority",
     "selectCategory": "Select category",
@@ -207,7 +210,8 @@
     "resolved": "Resolved",
     "closed": "Closed",
     "pending": "Pending",
-    "on_hold": "On Hold"
+    "on_hold": "On Hold",
+    "awaiting_user": "Awaiting User"
   },
   "priority": {
     "low": "Low",
@@ -315,6 +319,7 @@
     "closedTickets": "Closed Tickets",
     "avgResponseTime": "Average Response Time",
     "exportPdf": "Export PDF",
+    "exportPdfError": "Failed to export PDF. Please try again.",
     "ticketsByStatus": "Tickets by Status",
     "ticketsByPriority": "Tickets by Priority",
     "recentActivity": "Recent Activity",
@@ -332,6 +337,9 @@
     "inactive": "Inactive",
     "activate": "Activate",
     "deactivate": "Deactivate",
+    "confirmActivate": "Are you sure you want to activate \"{{name}}\"?",
+    "confirmDeactivate": "Are you sure you want to deactivate \"{{name}}\"?",
+    "statusUpdateError": "Failed to update category status",
     "createdAt": "Created At",
     "nameRequired": "Name is required"
   },

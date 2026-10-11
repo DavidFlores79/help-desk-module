@@ -1,4 +1,4 @@
-import { Component, inject, OnInit } from '@angular/core';
+import { Component, ElementRef, HostListener, inject, OnInit, ViewChild } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -6,7 +6,8 @@ import { TicketService } from '../../../../core/services/ticket.service';
 import { TicketCategoryService } from '../../../../core/services/ticket-category.service';
 import { UserService } from '../../../../core/services/user.service';
 import { AuthService } from '../../../../core/services/auth.service';
-import { Ticket, TicketCategory } from '../../../../core/models/ticket.model';
+import { TranslationService } from '../../../../core/services/translation.service';
+import { Ticket, TicketCategory, TicketStatus } from '../../../../core/models/ticket.model';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
 import { TimeAgoPipe } from '../../../../shared/pipes/time-ago.pipe';
 import { StatusBadgePipe } from '../../../../shared/pipes/status-badge.pipe';
@@ -289,7 +290,7 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
                         </a>
                         @if (ticket.status !== 'closed' && ticket.status !== 'resolved') {
                           <button
-                            (click)="updateStatus(ticket)"
+                            (click)="openStatusModal(ticket)"
                             class="text-gray-600 hover:text-gray-700">
                             Update
                           </button>
@@ -304,12 +305,76 @@ import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
         </div>
       </main>
     </div>
+
+    <!-- Status Modal -->
+    @if (statusTicket) {
+      <div class="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4" (click)="closeStatusModal()">
+        <div
+          class="bg-white rounded-lg shadow-xl p-6 w-full max-w-md"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="admin-status-title"
+          (click)="$event.stopPropagation()">
+          <h3 id="admin-status-title" class="text-lg font-semibold text-gray-900">{{ 'ticket.updateStatus' | translate }}</h3>
+          <p class="text-sm text-gray-500 mb-4 break-words">#{{ statusTicket.id }} - {{ statusTicket.title }}</p>
+
+          <label for="admin-ticket-status" class="block text-sm font-medium text-gray-700 mb-2">
+            {{ 'ticket.status' | translate }}
+          </label>
+          <select #statusSelect id="admin-ticket-status" [(ngModel)]="selectedStatus" class="input-field">
+            @for (status of statusOptions; track status) {
+              <option [value]="status">{{ 'status.' + status | translate }}</option>
+            }
+          </select>
+
+          @if (selectedStatus === 'closed') {
+            <p class="mt-3 p-3 text-sm text-warning-700 bg-warning-50 border border-warning-200 rounded-lg">
+              {{ 'ticket.confirmClose' | translate }}
+            </p>
+          }
+
+          @if (statusError) {
+            <p class="mt-3 p-3 text-sm text-danger-700 bg-danger-50 border border-danger-200 rounded-lg">{{ statusError }}</p>
+          }
+
+          <div class="flex gap-3 justify-end mt-6">
+            <button type="button" (click)="closeStatusModal()" class="btn-secondary" [disabled]="isUpdatingStatus">
+              {{ 'app.cancel' | translate }}
+            </button>
+            <button
+              type="button"
+              (click)="saveStatus()"
+              class="btn-primary"
+              [disabled]="isUpdatingStatus || selectedStatus === statusTicket.status">
+              {{ isUpdatingStatus ? ('app.saving' | translate) : ('app.save' | translate) }}
+            </button>
+          </div>
+        </div>
+      </div>
+    }
+
+    <!-- Error Toast -->
+    @if (errorMessage) {
+      <div class="fixed bottom-4 left-4 right-4 sm:left-auto sm:max-w-md z-50 flex items-start gap-3 p-4 bg-danger-50 border border-danger-200 rounded-lg shadow-lg" role="alert">
+        <p class="flex-1 text-sm text-danger-700">{{ errorMessage }}</p>
+        <button
+          type="button"
+          (click)="errorMessage = ''"
+          class="text-danger-700 hover:text-danger-900"
+          [attr.aria-label]="'app.close' | translate">
+          <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+    }
   `
 })
 export class AdminPageComponent implements OnInit {
   private ticketService = inject(TicketService);
   private ticketCategoryService = inject(TicketCategoryService);
   private userService = inject(UserService);
+  private translationService = inject(TranslationService);
   authService = inject(AuthService);
 
   // Make String available in template
@@ -334,6 +399,25 @@ export class AdminPageComponent implements OnInit {
     resolved: 0
   };
   isLoading = false;
+  errorMessage = '';
+
+  readonly statusOptions: TicketStatus[] = [
+    'open',
+    'assigned',
+    'in_progress',
+    'awaiting_user',
+    'resolved',
+    'closed'
+  ];
+  statusTicket: Ticket | null = null;
+  selectedStatus: TicketStatus = 'open';
+  statusError = '';
+  isUpdatingStatus = false;
+
+  // Focus the status picker as soon as the modal renders
+  @ViewChild('statusSelect') set statusSelect(select: ElementRef<HTMLSelectElement> | undefined) {
+    select?.nativeElement.focus();
+  }
 
   ngOnInit(): void {
     this.loadTechnicians();
@@ -404,12 +488,16 @@ export class AdminPageComponent implements OnInit {
     const userId = (event.target as HTMLSelectElement).value;
     if (!userId) return;
 
+    this.errorMessage = '';
+
     this.ticketService.assignTicket(ticket.id, { assigned_to: +userId }).subscribe({
       next: () => {
         this.loadTickets();
       },
       error: (error) => {
-        alert('Failed to assign ticket: ' + error.message);
+        this.errorMessage = error.message || this.translationService.instant('assignment.assignmentError');
+        // Reload so the row shows the assignment the server still has
+        this.loadTickets();
       }
     });
   }
@@ -441,27 +529,40 @@ export class AdminPageComponent implements OnInit {
     return 'Unassigned';
   }
 
-  updateStatus(ticket: Ticket): void {
-    if (ticket.status === 'resolved' || ticket.status === 'closed') {
-      alert('Cannot change status of resolved or closed tickets. Please reopen the ticket first from the ticket detail page.');
-      return;
-    }
+  openStatusModal(ticket: Ticket): void {
+    // Resolved and closed tickets are reopened from the ticket detail page
+    if (ticket.status === 'resolved' || ticket.status === 'closed') return;
 
-    const newStatus = prompt(
-      'Update ticket status:\nopen, assigned, in_progress, awaiting_user, resolved, closed',
-      ticket.status
-    );
+    this.statusTicket = ticket;
+    this.selectedStatus = ticket.status;
+    this.statusError = '';
+  }
 
-    if (newStatus && newStatus !== ticket.status) {
-      this.ticketService.updateTicket(ticket.id, { status: newStatus }).subscribe({
-        next: () => {
-          this.loadTickets();
-        },
-        error: (error) => {
-          alert('Failed to update status: ' + error.message);
-        }
-      });
-    }
+  @HostListener('document:keydown.escape')
+  closeStatusModal(): void {
+    if (!this.statusTicket || this.isUpdatingStatus) return;
+    this.statusTicket = null;
+  }
+
+  saveStatus(): void {
+    const ticket = this.statusTicket;
+    if (!ticket || this.isUpdatingStatus || this.selectedStatus === ticket.status) return;
+
+    this.isUpdatingStatus = true;
+    this.statusError = '';
+    this.errorMessage = '';
+
+    this.ticketService.changeStatus(ticket.id, this.selectedStatus).subscribe({
+      next: () => {
+        this.isUpdatingStatus = false;
+        this.statusTicket = null;
+        this.loadTickets();
+      },
+      error: (error) => {
+        this.isUpdatingStatus = false;
+        this.statusError = error.message || this.translationService.instant('ticket.statusUpdateError');
+      }
+    });
   }
 
   getSelectedCategoryId(ticketId: number): string {
@@ -474,6 +575,8 @@ export class AdminPageComponent implements OnInit {
   }
 
   onCategoryChange(ticket: Ticket, newCategoryId: string): void {
+    this.errorMessage = '';
+
     this.ticketService.updateTicket(ticket.id, {
       ticket_category_id: newCategoryId ? +newCategoryId : null
     }).subscribe({
@@ -481,9 +584,9 @@ export class AdminPageComponent implements OnInit {
         this.loadTickets();
       },
       error: (error) => {
-        alert('Failed to change category: ' + error.message);
-        const category = ticket.ticketCategory || ticket.ticket_category;
-        this.selectedCategories.set(ticket.id, category ? String(category.id) : '');
+        this.errorMessage = error.message || this.translationService.instant('ticket.categoryUpdateError');
+        // Reload so the dropdown shows the category the server still has
+        this.loadTickets();
       }
     });
   }
@@ -558,6 +661,7 @@ export class AdminPageComponent implements OnInit {
   exportPdf(): void {
     console.log('📥 [ADMIN] Exporting tickets to PDF with filters:', this.filters);
     this.isLoading = true;
+    this.errorMessage = '';
 
     const filters = {
       ...(this.filters.status && { status: this.filters.status }),
@@ -603,7 +707,7 @@ export class AdminPageComponent implements OnInit {
       },
       error: (error) => {
         console.error('❌ [ADMIN] PDF export failed:', error);
-        alert('Failed to export PDF. Please try again.');
+        this.errorMessage = this.translationService.instant('admin.exportPdfError');
         this.isLoading = false;
       }
     });
