@@ -170,6 +170,9 @@
     "cannotChangePriorityClosed": "No se puede cambiar la prioridad de tickets cerrados.",
     "cannotChangeCategoryClosed": "No se puede cambiar la categoría de tickets cerrados.",
     "cannotAssignClosed": "No se pueden asignar tickets cerrados.",
+    "updateStatus": "Actualizar Estado",
+    "statusUpdateError": "Error al actualizar el estado",
+    "categoryUpdateError": "Error al cambiar la categoría",
     "ticketNumber": "Número de Ticket",
     "selectPriority": "Seleccionar prioridad",
     "selectCategory": "Seleccionar categoría",
@@ -207,7 +210,8 @@
     "resolved": "Resuelto",
     "closed": "Cerrado",
     "pending": "Pendiente",
-    "on_hold": "En Espera"
+    "on_hold": "En Espera",
+    "awaiting_user": "Esperando Usuario"
   },
   "priority": {
     "low": "Baja",
@@ -315,6 +319,7 @@
     "closedTickets": "Tickets Cerrados",
     "avgResponseTime": "Tiempo Promedio de Respuesta",
     "exportPdf": "Exportar PDF",
+    "exportPdfError": "Error al exportar el PDF. Por favor intenta de nuevo.",
     "ticketsByStatus": "Tickets por Estado",
     "ticketsByPriority": "Tickets por Prioridad",
     "recentActivity": "Actividad Reciente",
@@ -332,6 +337,9 @@
     "inactive": "Inactiva",
     "activate": "Activar",
     "deactivate": "Desactivar",
+    "confirmActivate": "¿Estás seguro de que deseas activar \"{{name}}\"?",
+    "confirmDeactivate": "¿Estás seguro de que deseas desactivar \"{{name}}\"?",
+    "statusUpdateError": "Error al actualizar el estado de la categoría",
     "createdAt": "Fecha de Creación",
     "nameRequired": "El nombre es requerido"
   },
@@ -413,7 +421,11 @@
     "unknownError": "Error desconocido",
     "pageNotFound": "Página no encontrada",
     "accessDenied": "Acceso denegado",
-    "noPermission": "No tienes permiso para realizar esta acción"
+    "noPermission": "No tienes permiso para realizar esta acción",
+    "cannotConnect": "No se puede conectar al servidor",
+    "validation": "Error de validación",
+    "serverErrorRetry": "Error interno del servidor. Intenta de nuevo más tarde.",
+    "httpStatus": "Error HTTP {{status}}"
   },
   "time": {
     "justNow": "Justo ahora",

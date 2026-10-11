@@ -2,11 +2,14 @@ import { Component, Input, Output, EventEmitter, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { Attachment } from '../../../core/models/ticket.model';
 import { TicketService } from '../../../core/services/ticket.service';
+import { TranslationService } from '../../../core/services/translation.service';
+import { ConfirmationModalComponent } from '../confirmation-modal/confirmation-modal.component';
+import { TranslatePipe } from '../../pipes/translate.pipe';
 
 @Component({
   selector: 'app-attachment-viewer',
   standalone: true,
-  imports: [CommonModule],
+  imports: [CommonModule, ConfirmationModalComponent, TranslatePipe],
   template: `
     <div class="flex flex-wrap gap-2">
       @for (attachment of attachments; track attachment.id) {
@@ -101,6 +104,17 @@ import { TicketService } from '../../../core/services/ticket.service';
         {{ errorMessage }}
       </div>
     }
+
+    <app-confirmation-modal
+      [isOpen]="!!pendingDelete"
+      [title]="'attachment.delete' | translate"
+      [message]="deleteConfirmMessage"
+      [confirmText]="'app.delete' | translate"
+      [cancelText]="'app.cancel' | translate"
+      [type]="'danger'"
+      (confirmed)="confirmDeleteAttachment()"
+      (cancelled)="pendingDelete = null"
+    ></app-confirmation-modal>
   `
 })
 export class AttachmentViewerComponent {
@@ -109,9 +123,12 @@ export class AttachmentViewerComponent {
   @Output() attachmentDeleted = new EventEmitter<number>();
 
   private ticketService = inject(TicketService);
+  private translationService = inject(TranslationService);
 
   isProcessing: { [key: number]: boolean } = {};
   errorMessage = '';
+  pendingDelete: Attachment | null = null;
+  deleteConfirmMessage = '';
 
   /**
    * Get mime type from attachment, with fallback to guessing from filename
@@ -200,17 +217,24 @@ export class AttachmentViewerComponent {
         this.isProcessing[attachment.id] = false;
       },
       error: () => {
-        this.errorMessage = 'Failed to download attachment. Please try again.';
+        this.errorMessage = this.translationService.instant('attachment.downloadError');
         this.isProcessing[attachment.id] = false;
       }
     });
   }
 
   deleteAttachment(attachment: Attachment): void {
-    if (!confirm(`Are you sure you want to delete "${attachment.original_name || attachment.name}"? This action cannot be undone.`)) {
-      return;
-    }
+    this.deleteConfirmMessage = this.translationService.instant('attachment.confirmDelete', {
+      name: attachment.original_name || attachment.name
+    });
+    this.pendingDelete = attachment;
+  }
 
+  confirmDeleteAttachment(): void {
+    const attachment = this.pendingDelete;
+    if (!attachment) return;
+
+    this.pendingDelete = null;
     this.isProcessing[attachment.id] = true;
     this.errorMessage = '';
 
@@ -220,7 +244,7 @@ export class AttachmentViewerComponent {
         this.attachmentDeleted.emit(attachment.id);
       },
       error: (error) => {
-        this.errorMessage = error.message || 'Failed to delete attachment. You may not have permission.';
+        this.errorMessage = error.message || this.translationService.instant('attachment.deleteError');
         this.isProcessing[attachment.id] = false;
       }
     });

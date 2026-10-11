@@ -3,7 +3,9 @@ import { CommonModule } from '@angular/common';
 import { RouterModule } from '@angular/router';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { TicketCategoryService, CreateTicketCategoryDto, UpdateTicketCategoryDto } from '../../../../core/services/ticket-category.service';
+import { TranslationService } from '../../../../core/services/translation.service';
 import { HeaderComponent } from '../../../../shared/components/header/header.component';
+import { ConfirmationModalComponent } from '../../../../shared/components/confirmation-modal/confirmation-modal.component';
 import { TranslatePipe } from '../../../../shared/pipes/translate.pipe';
 import { TicketCategory } from '../../../../core/models/ticket.model';
 
@@ -15,6 +17,7 @@ import { TicketCategory } from '../../../../core/models/ticket.model';
     RouterModule,
     ReactiveFormsModule,
     HeaderComponent,
+    ConfirmationModalComponent,
     TranslatePipe
   ],
   template: `
@@ -197,11 +200,23 @@ import { TicketCategory } from '../../../../core/models/ticket.model';
         </div>
       </div>
     }
+
+    <app-confirmation-modal
+      [isOpen]="!!pendingToggleCategory"
+      [title]="'app.confirm' | translate"
+      [message]="toggleConfirmMessage"
+      [confirmText]="(pendingToggleCategory?.active ? 'category.deactivate' : 'category.activate') | translate"
+      [cancelText]="'app.cancel' | translate"
+      [type]="'warning'"
+      (confirmed)="confirmToggleCategoryStatus()"
+      (cancelled)="pendingToggleCategory = null"
+    ></app-confirmation-modal>
   `
 })
 export class TicketCategoriesPageComponent implements OnInit {
   private fb = inject(FormBuilder);
   private ticketCategoryService = inject(TicketCategoryService);
+  private translationService = inject(TranslationService);
 
   categories: TicketCategory[] = [];
   isLoading = false;
@@ -211,6 +226,8 @@ export class TicketCategoriesPageComponent implements OnInit {
   showCreateModal = false;
   showEditModal = false;
   editingCategory: TicketCategory | null = null;
+  pendingToggleCategory: TicketCategory | null = null;
+  toggleConfirmMessage = '';
 
   categoryForm = this.fb.group({
     name: ['', Validators.required],
@@ -293,19 +310,24 @@ export class TicketCategoriesPageComponent implements OnInit {
   }
 
   toggleCategoryStatus(category: TicketCategory): void {
-    const newStatus = !category.active;
-    const action = newStatus ? 'activate' : 'deactivate';
+    const key = category.active ? 'category.confirmDeactivate' : 'category.confirmActivate';
+    this.toggleConfirmMessage = this.translationService.instant(key, { name: category.name });
+    this.pendingToggleCategory = category;
+  }
 
-    if (!confirm(`Are you sure you want to ${action} "${category.name}"?`)) {
-      return;
-    }
+  confirmToggleCategoryStatus(): void {
+    const category = this.pendingToggleCategory;
+    if (!category) return;
 
-    this.ticketCategoryService.updateTicketCategory(category.id, { active: newStatus }).subscribe({
+    this.pendingToggleCategory = null;
+    this.errorMessage = '';
+
+    this.ticketCategoryService.updateTicketCategory(category.id, { active: !category.active }).subscribe({
       next: () => {
         this.loadCategories();
       },
       error: (error) => {
-        this.errorMessage = error.message || 'Failed to update category status';
+        this.errorMessage = error.message || this.translationService.instant('category.statusUpdateError');
       }
     });
   }
