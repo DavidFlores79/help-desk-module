@@ -70,7 +70,9 @@ git checkout -b feat/feature-name develop
 **Branch strategy** (git flow; `develop` is the default branch). Every push to `main` deploys straight to production (`.github/workflows/main.yml`), and there is no staging environment yet, so `main` only receives releases and hotfixes:
 - `feat/`, `fix/`, `refactor/`, `chore/` branches are cut from `develop` and PR into `develop` (`gh pr create --base develop`). Never commit directly to `develop` or `main`.
 - A release is a `release/x.y.z` branch cut from `develop` and PRed into `main`.
-- A `hotfix/` branch is cut from `main` and PRed into `main`. After a `hotfix/` or `release/` PR merges, `.github/workflows/mergeback.yml` opens the `main` → `develop` PR. Merge that PR, and release PRs, with a merge commit, never squash or rebase, or `develop` and `main` stop sharing history.
+- A `hotfix/` branch is cut from `main` and PRed into `main`.
+- Both must bump `package.json` (`npm version <patch|minor|major> --no-git-tag-version`); a release branch's name must match the new version. `.github/workflows/release-version.yml` fails the PR check otherwise, and after the merge it tags `main` as `v<version>`. Don't tag by hand.
+- After a `hotfix/` or `release/` PR merges, `.github/workflows/mergeback.yml` opens the `main` → `develop` PR. Merge that PR, and release PRs, with a merge commit, never squash or rebase, or `develop` and `main` stop sharing history.
 
 ### Available Agents
 

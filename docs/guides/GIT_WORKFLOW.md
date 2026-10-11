@@ -37,18 +37,22 @@ Keep a long-running branch current with `git rebase origin/develop` (or `git mer
 ## Releasing
 
 1. Pick the next version from what landed on `develop` since the last release (semver: `fix` → patch, `feat` → minor, breaking → major).
-2. Cut the release branch and open the PR into `main`:
+2. Cut the release branch, bump `package.json` to that version, and open the PR into `main`:
 
    ```bash
    git checkout develop
    git pull origin develop
    git checkout -b release/1.1.0
+   npm version 1.1.0 --no-git-tag-version
+   git commit -am "chore(release): 1.1.0"
    git push -u origin release/1.1.0
    gh pr create --base main --title "release: 1.1.0"
    ```
 
-3. Merge it with a **merge commit**. Merging deploys to production.
-4. The mergeback workflow opens a `main` → `develop` PR; merge it with a merge commit too.
+3. Merge it with a **merge commit**. Merging deploys to production, and the release workflow tags the merge as `v1.1.0`.
+4. The mergeback workflow opens a `main` → `develop` PR; merge it with a merge commit too. It carries the version bump back to `develop`.
+
+To see what has landed since the last release: `git log --oneline v1.0.1..develop` (use the latest tag).
 
 ## Hotfixes
 
@@ -58,11 +62,17 @@ git pull origin main
 git checkout -b hotfix/login-loop
 
 # ...fix, commit...
+npm version patch --no-git-tag-version
+git commit -am "chore(release): 1.1.1"
 git push -u origin hotfix/login-loop
 gh pr create --base main
 ```
 
-Merging deploys the fix. `.github/workflows/mergeback.yml` then opens the `main` → `develop` PR automatically. Merge it promptly: until it lands, `develop` doesn't have the fix, and the next release would either bring the bug back or conflict.
+Merging deploys the fix and tags it (`v1.1.1`). `.github/workflows/mergeback.yml` then opens the `main` → `develop` PR automatically. Merge it promptly: until it lands, `develop` doesn't have the fix, and the next release would either bring the bug back or conflict.
+
+## Versions and tags
+
+Every `release/` and `hotfix/` PR into `main` must raise the version in `package.json`; `.github/workflows/release-version.yml` fails the PR check if it doesn't, or if a `release/x.y.z` branch name doesn't match the version. After the merge, the same workflow tags the merge commit as `v<version>`. Nothing else reacts to tags; they mark what went to production.
 
 ## Merge methods
 
