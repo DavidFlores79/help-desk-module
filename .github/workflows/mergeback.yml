@@ -1,0 +1,62 @@
+name: Merge main back into develop
+
+# A hotfix or release merged into main must also reach develop, or the next
+# release from develop would ship without it. This opens that PR automatically.
+on:
+  pull_request:
+    types: [closed]
+    branches:
+      - main
+
+permissions:
+  contents: read
+  pull-requests: write
+
+# Two merges into main close together must not both try to open the PR
+concurrency:
+  group: mergeback-develop
+  cancel-in-progress: false
+
+jobs:
+  open-mergeback-pr:
+    if: >-
+      github.event.pull_request.merged == true &&
+      (startsWith(github.event.pull_request.head.ref, 'hotfix/') ||
+       startsWith(github.event.pull_request.head.ref, 'release/'))
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Open main → develop PR
+        env:
+          GH_TOKEN: ${{ github.token }}
+          REPO: ${{ github.repository }}
+          SOURCE_PR_URL: ${{ github.event.pull_request.html_url }}
+          SOURCE_BRANCH: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+
+          # An open mergeback PR follows main, so it already carries this merge
+          existing=$(gh pr list --repo "$REPO" --base develop --head main --state open --json url --jq '.[0].url // empty')
+          if [ -n "$existing" ]; then
+            echo "Mergeback PR already open: $existing"
+            exit 0
+          fi
+
+          ahead=$(gh api "repos/$REPO/compare/develop...main" --jq '.ahead_by')
+          if [ "$ahead" = "0" ]; then
+            echo "develop already contains everything in main"
+            exit 0
+          fi
+
+          body=$(cat <<EOF
+          ## Description
+
+          Brings \`$SOURCE_BRANCH\` (merged into main in $SOURCE_PR_URL) back into develop so the next release keeps it.
+
+          Merge with a **merge commit**, not squash or rebase, so develop and main keep a shared history.
+          EOF
+          )
+
+          gh pr create --repo "$REPO" --base develop --head main \
+            --title "chore: merge main into develop after $SOURCE_BRANCH" \
+            --body "$body"
