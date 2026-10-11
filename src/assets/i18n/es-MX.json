@@ -421,7 +421,11 @@
     "unknownError": "Error desconocido",
     "pageNotFound": "Página no encontrada",
     "accessDenied": "Acceso denegado",
-    "noPermission": "No tienes permiso para realizar esta acción"
+    "noPermission": "No tienes permiso para realizar esta acción",
+    "cannotConnect": "No se puede conectar al servidor",
+    "validation": "Error de validación",
+    "serverErrorRetry": "Error interno del servidor. Intenta de nuevo más tarde.",
+    "httpStatus": "Error HTTP {{status}}"
   },
   "time": {
     "justNow": "Justo ahora",

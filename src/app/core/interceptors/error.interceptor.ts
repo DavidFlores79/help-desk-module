@@ -4,16 +4,19 @@ import { catchError, throwError } from 'rxjs';
 import { Router } from '@angular/router';
 import { AuthService } from '../services/auth.service';
 import { LoggerService } from '../services/logger.service';
+import { TranslationService } from '../services/translation.service';
 
 export const errorInterceptor: HttpInterceptorFn = (req, next) => {
   const router = inject(Router);
   const authService = inject(AuthService);
   const logger = inject(LoggerService);
+  const translation = inject(TranslationService);
   const isAuthEndpoint = req.url.includes('/auth/') || req.url.includes('/login') || req.url.includes('/register');
 
   return next(req).pipe(
     catchError((error: HttpErrorResponse) => {
-      let errorMessage = error.error?.message || 'Ocurrió un error';
+      // Every branch below fills in a translated message when the API sent none
+      let errorMessage: string = error.error?.message || '';
       let errorDetails = '';
 
       logger.group('[ERROR INTERCEPTOR] HTTP Error');
@@ -23,18 +26,21 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
       logger.debug('Status Text:', error.statusText);
 
       if (error.error instanceof ErrorEvent) {
-        errorMessage = error.error.message || 'Error de conexión';
+        errorMessage = translation.instant('error.networkError');
         errorDetails = 'Error del cliente o de red';
         logger.error('Client-side error:', error.error);
       } else if (error.status === 0) {
-        errorMessage = 'No se puede conectar al servidor';
+        errorMessage = translation.instant('error.cannotConnect');
         errorDetails = 'Verifica tu conexión de red';
         logger.error('Network error - Status 0:', { url: req.url });
       } else {
         switch (error.status) {
           case 401:
             if (!error.error?.message) {
-              errorMessage = 'Credenciales inválidas';
+              // Wrong credentials on login; an expired session everywhere else
+              errorMessage = translation.instant(
+                isAuthEndpoint ? 'auth.invalidCredentials' : 'error.unauthorized'
+              );
             }
             if (!isAuthEndpoint && authService.isAuthenticated()) {
               logger.info('401 Unauthorized - Logging out user');
@@ -44,26 +50,26 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             break;
           case 403:
             if (!error.error?.message) {
-              errorMessage = 'No tienes permiso para realizar esta acción';
+              errorMessage = translation.instant('error.noPermission');
             }
             errorDetails = 'Permisos insuficientes';
             break;
           case 404:
             if (!error.error?.message) {
-              errorMessage = 'Recurso no encontrado';
+              errorMessage = translation.instant('error.notFound');
             }
             logger.warn('404 Not Found:', req.url);
             break;
           case 422:
             if (!error.error?.message) {
-              errorMessage = 'Error de validación';
+              errorMessage = translation.instant('error.validation');
             }
             errorDetails = error.error?.errors ? JSON.stringify(error.error.errors) : '';
             logger.debug('422 Validation Error:', error.error);
             break;
           case 500:
             if (!error.error?.message) {
-              errorMessage = 'Error interno del servidor. Intenta de nuevo más tarde.';
+              errorMessage = translation.instant('error.serverErrorRetry');
             }
             logger.error('500 Server Error:', {
               message: error.error?.message,
@@ -72,7 +78,7 @@ export const errorInterceptor: HttpInterceptorFn = (req, next) => {
             break;
           default:
             if (!error.error?.message) {
-              errorMessage = `Error HTTP ${error.status}`;
+              errorMessage = translation.instant('error.httpStatus', { status: error.status });
             }
             errorDetails = 'Error inesperado';
         }

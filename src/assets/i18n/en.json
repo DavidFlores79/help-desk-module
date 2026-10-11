@@ -421,7 +421,11 @@
     "unknownError": "Unknown error",
     "pageNotFound": "Page not found",
     "accessDenied": "Access denied",
-    "noPermission": "You don't have permission to perform this action"
+    "noPermission": "You don't have permission to perform this action",
+    "cannotConnect": "Cannot connect to the server",
+    "validation": "Validation error",
+    "serverErrorRetry": "Internal server error. Please try again later.",
+    "httpStatus": "HTTP error {{status}}"
   },
   "time": {
     "justNow": "Just now",
