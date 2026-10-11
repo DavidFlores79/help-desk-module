@@ -1,0 +1,86 @@
+name: Release version
+
+# Every release/ and hotfix/ PR into main must bump package.json, and the
+# merge is tagged v<version> so each production release has a fixed marker.
+on:
+  pull_request:
+    types: [opened, synchronize, reopened, closed]
+    branches:
+      - main
+
+jobs:
+  check-version-bump:
+    if: >-
+      github.event.action != 'closed' &&
+      (startsWith(github.event.pull_request.head.ref, 'hotfix/') ||
+       startsWith(github.event.pull_request.head.ref, 'release/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+
+      - name: Compare package.json version with main
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          HEAD_REF: ${{ github.event.pull_request.head.ref }}
+        run: |
+          set -euo pipefail
+          git fetch --depth=1 origin "$BASE_REF"
+
+          head_version=$(node -p "require('./package.json').version")
+          base_version=$(git show "origin/$BASE_REF:package.json" | node -p "JSON.parse(require('fs').readFileSync(0, 'utf8')).version")
+          echo "main: $base_version, this branch: $head_version"
+
+          highest=$(printf '%s\n%s\n' "$base_version" "$head_version" | sort -V | tail -n 1)
+          if [ "$head_version" = "$base_version" ] || [ "$highest" != "$head_version" ]; then
+            echo "::error::package.json must be above $base_version. Run: npm version <patch|minor|major> --no-git-tag-version, then commit."
+            exit 1
+          fi
+
+          if [[ "$HEAD_REF" == release/* ]] && [ "${HEAD_REF#release/}" != "$head_version" ]; then
+            echo "::error::Branch $HEAD_REF does not match package.json version $head_version."
+            exit 1
+          fi
+
+  tag-release:
+    if: >-
+      github.event.action == 'closed' &&
+      github.event.pull_request.merged == true &&
+      (startsWith(github.event.pull_request.head.ref, 'hotfix/') ||
+       startsWith(github.event.pull_request.head.ref, 'release/'))
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Checkout merge commit
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.merge_commit_sha }}
+
+      - name: Tag main with the package.json version
+        env:
+          MERGE_SHA: ${{ github.event.pull_request.merge_commit_sha }}
+        run: |
+          set -euo pipefail
+          tag="v$(node -p "require('./package.json').version")"
+
+          # Re-running the job is fine; a tag on a different commit means the version was not bumped
+          existing=$(git ls-remote origin "refs/tags/$tag" | cut -f1)
+          if [ -n "$existing" ]; then
+            if [ "$existing" = "$MERGE_SHA" ]; then
+              echo "$tag already points at $MERGE_SHA"
+              exit 0
+            fi
+            echo "::error::$tag already exists on another commit ($existing). Bump package.json and tag this release by hand."
+            exit 1
+          fi
+
+          git tag "$tag" "$MERGE_SHA"
+          git push origin "refs/tags/$tag"
+          echo "Tagged $MERGE_SHA as $tag"
